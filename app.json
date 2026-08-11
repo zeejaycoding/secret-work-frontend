@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "secret-work",
+    "slug": "secret-work",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.jpg",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.jpg",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.busines2202.secretwork"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "secretwork",
+    "plugins": [
+      "expo-font",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "color": "#E50914"
+        }
+      ]
+    ],
+    "androidNavigationBar": {
+      "backgroundColor": "#000000",
+      "barStyle": "light-content"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cd218c2d-9baa-4ada-86be-c359dd507066"
+      }
+    }
+  }
+}
