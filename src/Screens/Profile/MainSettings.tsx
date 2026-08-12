@@ -15,6 +15,7 @@ import {
   responsiveWidth,
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 type SettingItemProps = {
   title: string;
@@ -44,6 +45,9 @@ const settingsData = [
 ];
 
 const SettingItem = ({ title, image, onPress }: SettingItemProps) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
+
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.card} onPress={onPress}>
       <View style={styles.leftContainer}>
@@ -57,7 +61,7 @@ const SettingItem = ({ title, image, onPress }: SettingItemProps) => {
       <Ionicons
         name="chevron-forward"
         size={moderateScale(16)}
-        color="#6B6B6B"
+        color={colors.textSecondary}
       />
     </TouchableOpacity>
   );
@@ -65,10 +69,12 @@ const SettingItem = ({ title, image, onPress }: SettingItemProps) => {
 
 const MainSettings = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity
@@ -76,7 +82,7 @@ const MainSettings = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Settings</Text>
@@ -98,76 +104,77 @@ const MainSettings = () => {
 
 export default MainSettings;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: responsiveWidth(5),
-    marginTop: responsiveHeight(6),
-  },
+    headerContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: responsiveWidth(5),
+      marginTop: responsiveHeight(6),
+    },
 
-  backButton: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    backButton: {
+      width: moderateScale(40),
+      height: moderateScale(40),
+      borderRadius: moderateScale(100),
+      backgroundColor: colors.backgroundElevated,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  headerTitle: {
-    color: "#fff",
-    fontSize: moderateScale(17),
-    fontFamily: "Inter-Medium",
-    marginLeft: responsiveWidth(3),
-  },
+    headerTitle: {
+      color: colors.text,
+      fontSize: moderateScale(17),
+      fontFamily: "Inter-Medium",
+      marginLeft: responsiveWidth(3),
+    },
 
-  listContainer: {
-    marginTop: responsiveHeight(2),
-    paddingHorizontal: responsiveWidth(4),
-  },
+    listContainer: {
+      marginTop: responsiveHeight(2),
+      paddingHorizontal: responsiveWidth(4),
+    },
 
-  card: {
-    width: "100%",
-    minHeight: responsiveHeight(8.5),
-    backgroundColor: "#0A0A0A",
-    borderRadius: moderateScale(14),
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: responsiveWidth(2),
-    marginBottom: responsiveHeight(0.8),
-  },
+    card: {
+      width: "100%",
+      minHeight: responsiveHeight(8.5),
+      backgroundColor: colors.backgroundCard,
+      borderRadius: moderateScale(14),
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: responsiveWidth(2),
+      marginBottom: responsiveHeight(0.8),
+    },
 
-  leftContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    leftContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  iconContainer: {
-    width: moderateScale(42),
-    height: moderateScale(42),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#161616",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    iconContainer: {
+      width: moderateScale(42),
+      height: moderateScale(42),
+      borderRadius: moderateScale(100),
+      backgroundColor: colors.backgroundInput,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  iconImage: {
-    width: moderateScale(20),
-    height: moderateScale(20),
-    resizeMode: "contain",
-  },
+    iconImage: {
+      width: moderateScale(20),
+      height: moderateScale(20),
+      resizeMode: "contain",
+    },
 
-  title: {
-    color: "#fff",
-    fontSize: moderateScale(13),
-    marginLeft: responsiveWidth(2),
-    fontFamily: "Inter-Medium",
-  },
-});
+    title: {
+      color: colors.text,
+      fontSize: moderateScale(13),
+      marginLeft: responsiveWidth(2),
+      fontFamily: "Inter-Medium",
+    },
+  });

@@ -26,6 +26,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getWorkout, getFollowStatus, toggleFollow } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const fallbackTabs = [
   "Ball Handling",
@@ -112,6 +113,8 @@ const formatCount = (n: number) => {
 
 const WorkoutProfileDetail = () => {
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const [activeTab, setActiveTab] = useState(fallbackTabs[0]);
   const [tabs, setTabs] = useState(fallbackTabs);
   const navigation = useNavigation<any>();
@@ -232,7 +235,7 @@ const WorkoutProfileDetail = () => {
               <MaterialCommunityIcons
                 name="clock-time-three"
                 size={moderateScale(10)}
-                color="#fff"
+                color={colors.text}
               />
 
               <Text style={styles.infoText}>{item.duration}</Text>
@@ -242,7 +245,7 @@ const WorkoutProfileDetail = () => {
               <FontAwesome5
                 name="running"
                 size={moderateScale(10)}
-                color="#fff"
+                color={colors.text}
               />
 
               <Text style={styles.infoText}>{item.reps}</Text>
@@ -267,7 +270,7 @@ const WorkoutProfileDetail = () => {
             })
           }
         >
-          <Ionicons name="play" size={moderateScale(16)} color="#fff" />
+          <Ionicons name="play" size={moderateScale(16)} color={colors.text} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -275,7 +278,7 @@ const WorkoutProfileDetail = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -293,7 +296,7 @@ const WorkoutProfileDetail = () => {
             <Ionicons
               name="chevron-back"
               size={moderateScale(22)}
-              color="#fff"
+              color={colors.white}
             />
           </TouchableOpacity>
         </ImageBackground>
@@ -318,7 +321,7 @@ const WorkoutProfileDetail = () => {
             <Feather
               name={following ? "user-check" : "user-plus"}
               size={moderateScale(14)}
-              color="#fff"
+              color={colors.white}
             />
 
             <Text style={styles.followText}>
@@ -404,10 +407,11 @@ const WorkoutProfileDetail = () => {
 
 export default WorkoutProfileDetail;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   headerImage: {
@@ -443,14 +447,14 @@ const styles = StyleSheet.create({
   },
 
   coachName: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(18),
     marginTop: responsiveHeight(1),
     fontFamily: "Inter-Medium",
   },
 
   teamName: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginTop: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
@@ -467,7 +471,7 @@ const styles = StyleSheet.create({
   },
 
   followText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(12),
     marginLeft: responsiveWidth(1.5),
     fontFamily: "Inter-Medium",
@@ -482,7 +486,7 @@ const styles = StyleSheet.create({
 
   statCard: {
     width: responsiveWidth(30),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(14),
     borderWidth: moderateScale(1),
     borderColor: "#330004",
@@ -494,27 +498,27 @@ const styles = StyleSheet.create({
     width: responsiveWidth(9.5),
     height: responsiveWidth(9.5),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: responsiveHeight(0.3),
   },
 
   statValue: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
   },
 
   statLabel: {
-    color: "#918D8F",
+    color: colors.textMuted,
     fontSize: moderateScale(9),
     marginTop: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
   },
 
   descriptionCard: {
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     marginHorizontal: responsiveWidth(3),
     marginTop: responsiveHeight(2),
     borderRadius: moderateScale(14),
@@ -522,14 +526,14 @@ const styles = StyleSheet.create({
   },
 
   descriptionTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     marginBottom: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
   },
 
   descriptionText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     lineHeight: moderateScale(16),
     fontFamily: "Inter-Medium",
@@ -540,7 +544,7 @@ const styles = StyleSheet.create({
   },
 
   videoHeading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     marginBottom: responsiveHeight(1.5),
     paddingHorizontal: responsiveWidth(4),
@@ -552,7 +556,7 @@ const styles = StyleSheet.create({
   },
 
   tabButton: {
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: responsiveWidth(2.4),
     paddingVertical: responsiveHeight(0.9),
     borderRadius: moderateScale(9),
@@ -564,13 +568,13 @@ const styles = StyleSheet.create({
   },
 
   tabText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
 
   activeTabText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "600",
   },
 
@@ -608,13 +612,13 @@ const styles = StyleSheet.create({
   },
 
   videoTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(13),
     fontFamily: "Inter-Medium",
   },
 
   videoCategory: {
-    color: "#9B9B9B",
+    color: colors.textMuted,
     fontSize: moderateScale(10),
     fontFamily: "Inter-Medium",
   },
@@ -632,7 +636,7 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(10),
     marginLeft: responsiveWidth(1),
     fontFamily: "Inter-Medium",
@@ -642,7 +646,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: moderateScale(100),
-    backgroundColor: "#161616B2",
+    backgroundColor: isDarkMode ? "#161616B2" : "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
   },

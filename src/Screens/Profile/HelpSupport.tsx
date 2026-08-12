@@ -15,6 +15,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 type FAQItem = {
   id: string;
@@ -64,6 +65,8 @@ const faqData: FAQItem[] = [
 const HelpSupport = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [expandedId, setExpandedId] = useState<string | null>("1");
 
   const toggleItem = (id: string) => {
@@ -72,7 +75,7 @@ const HelpSupport = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -86,7 +89,7 @@ const HelpSupport = () => {
             <Ionicons
               name="chevron-back"
               size={moderateScale(22)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -116,7 +119,7 @@ const HelpSupport = () => {
                   <Ionicons
                     name={isExpanded ? "remove" : "add"}
                     size={moderateScale(18)}
-                    color="#fff"
+                    color={colors.text}
                   />
                 </TouchableOpacity>
 
@@ -141,7 +144,7 @@ const HelpSupport = () => {
         <MaterialCommunityIcons
           name="chat-plus"
           size={moderateScale(30)}
-          color="#fff"
+          color={colors.white}
         />
       </TouchableOpacity>
     </View>
@@ -150,10 +153,11 @@ const HelpSupport = () => {
 
 export default HelpSupport;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -171,13 +175,13 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -195,7 +199,7 @@ const styles = StyleSheet.create({
   },
 
   helpTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(20),
     textAlign: "center",
     fontFamily: "Inter-Bold",
@@ -213,7 +217,7 @@ const styles = StyleSheet.create({
   faqContainer: {
     width: responsiveWidth(92),
     alignSelf: "center",
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(10),
     marginTop: responsiveHeight(1.5),
     paddingVertical: responsiveHeight(1),
@@ -228,7 +232,7 @@ const styles = StyleSheet.create({
   },
 
   questionText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(13),
     width: responsiveWidth(72),
     lineHeight: moderateScale(22),
@@ -236,7 +240,7 @@ const styles = StyleSheet.create({
   },
 
   answerText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     lineHeight: moderateScale(18),
     paddingBottom: responsiveHeight(2),
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: "#1F1F1F",
+    backgroundColor: colors.border,
   },
 
   floatingBtn: {

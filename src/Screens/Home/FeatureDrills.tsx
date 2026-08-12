@@ -15,6 +15,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { getDrills } from "../../services/api";
 
 const fallbackCategories = [
@@ -153,6 +154,8 @@ const FeatureDrills = () => {
   const [categories, setCategories] = useState(fallbackCategories);
   const [drillsData, setDrillsData] = useState(fallbackDrillsData);
   const { primaryColor } = useBranding();
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
 
   useEffect(() => {
     let mounted = true;
@@ -266,7 +269,7 @@ const FeatureDrills = () => {
                   <Ionicons
                     name="heart"
                     size={moderateScale(18)}
-                    color="#fff"
+                    color={colors.text}
                   />
                 </View>
 
@@ -275,7 +278,7 @@ const FeatureDrills = () => {
                     <Ionicons
                       name="time"
                       size={moderateScale(14)}
-                      color="#929292"
+                      color={colors.textMuted}
                     />
 
                     <Text style={styles.infoText}>{item.duration}</Text>
@@ -287,7 +290,7 @@ const FeatureDrills = () => {
                     <MaterialCommunityIcons
                       name="basketball"
                       size={moderateScale(15)}
-                      color="#929292"
+                      color={colors.textMuted}
                     />
 
                     <Text style={styles.infoText}>{item.level}</Text>
@@ -299,7 +302,7 @@ const FeatureDrills = () => {
                     <Ionicons
                       name="albums"
                       size={moderateScale(14)}
-                      color="#929292"
+                      color={colors.textMuted}
                     />
 
                     <Text style={styles.infoText}>{item.type}</Text>
@@ -316,7 +319,8 @@ const FeatureDrills = () => {
 
 export default FeatureDrills;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     marginTop: responsiveHeight(1.5),
     paddingLeft: responsiveWidth(3),
@@ -330,7 +334,7 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
     paddingLeft: responsiveWidth(1),
@@ -348,7 +352,7 @@ const styles = StyleSheet.create({
   },
 
   categoryButton: {
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: responsiveWidth(3),
     paddingVertical: responsiveHeight(1),
     borderRadius: moderateScale(10),
@@ -360,13 +364,13 @@ const styles = StyleSheet.create({
   },
 
   categoryText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   activeCategoryText: {
-    color: "#fff",
+    color: colors.white,
     fontFamily: "Inter-Medium",
   },
 
@@ -376,7 +380,7 @@ const styles = StyleSheet.create({
 
   card: {
     width: responsiveWidth(74),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     borderRadius: moderateScale(14),
     padding: moderateScale(10),
     marginRight: responsiveWidth(3),
@@ -400,7 +404,7 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(16),
     width: "82%",
     fontFamily: "Inter-Medium",
@@ -419,7 +423,7 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(11),
     marginLeft: responsiveWidth(1.2),
     fontFamily: "Inter-Regular",
@@ -429,7 +433,7 @@ const styles = StyleSheet.create({
     width: moderateScale(1),
     height: moderateScale(12),
     borderRadius: moderateScale(10),
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.borderStrong,
     marginHorizontal: responsiveWidth(2),
   },
 });

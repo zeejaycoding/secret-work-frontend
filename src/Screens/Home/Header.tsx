@@ -15,6 +15,7 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { getUnreadNotificationCount } from "../../services/api";
 import { connectSocket, onNotificationNew } from "../../services/socket";
 
@@ -22,6 +23,8 @@ const Header = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuthContext();
   const { primaryColor, tagline } = useBranding();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
   const [unread, setUnread] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -73,7 +76,7 @@ const Header = () => {
 
         <View>
           <Text style={styles.title}>Hey {displayName}</Text>
-          <Text style={styles.subtitle}>{tagline}</Text>
+          <Text style={[styles.subtitle, { color: isDarkMode ? colors.textMuted : "#000000" }]}>{tagline}</Text>
         </View>
       </View>
 
@@ -97,7 +100,8 @@ const Header = () => {
 
 export default Header;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     marginTop: responsiveHeight(6),
     paddingHorizontal: responsiveWidth(4),
@@ -120,13 +124,12 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14.5),
     fontFamily: "Inter-Medium",
   },
 
   subtitle: {
-    color: "#929292",
     fontSize: moderateScale(10),
     fontFamily: "Inter-Regular",
   },
@@ -149,10 +152,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: responsiveWidth(0.8),
     borderWidth: 1.5,
-    borderColor: "#000",
+    borderColor: colors.background,
   },
   badgeText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(8.5),
     fontFamily: "Inter-Bold",
   },

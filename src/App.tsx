@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
+import { StatusBar } from "react-native";
 import { useFonts } from "expo-font";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
@@ -10,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { AuthProvider } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
+import { ThemeProvider, useAppTheme } from "./context/ThemeContext";
 import { clerkTokenCache } from "./utils/clerkTokenCache";
 import { setupPushNotifications } from "./services/notifications";
 
@@ -109,6 +111,105 @@ export type RootStackNavProps<T extends keyof RootStackParamList> = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+function AppShell() {
+  const { colors, isDarkMode, statusBarStyle } = useAppTheme();
+
+  const navigationTheme = {
+    ...(isDarkMode ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDarkMode ? DarkTheme.colors : DefaultTheme.colors),
+      primary: "#E50914",
+      background: colors.background,
+      card: colors.backgroundCard,
+      text: colors.text,
+      border: colors.border,
+      notification: "#E50914",
+    },
+  };
+
+  return (
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      edges={["bottom"]}
+    >
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
+      <NavigationContainer theme={navigationTheme}>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
+          <Stack.Screen name="OnboardingFirst" component={OnboardingFirst} />
+          <Stack.Screen name="OnboardingSecond" component={OnboardingSecond} />
+          <Stack.Screen name="OnboardingThird" component={OnboardingThird} />
+          <Stack.Screen name="Signin" component={SigninScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="IntroVideo" component={IntroductionVideo} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="OTPVerify" component={OTPVerification} />
+          <Stack.Screen name="NewPassword" component={NewPassword} />
+          <Stack.Screen name="Success" component={SuccessScreen} />
+          <Stack.Screen name="OnboardingDetail" component={Details} />
+          <Stack.Screen name="OnboardingHeight" component={Height} />
+          <Stack.Screen
+            name="OnboardingExperienceLevel"
+            component={ExperienceLevel}
+          />
+          <Stack.Screen
+            name="OnboardingWorking"
+            component={OnboardingWorking}
+          />
+          <Stack.Screen name="OnboardingTrain" component={OnboardingTrain} />
+          <Stack.Screen name="Subscription" component={Subscription} />
+          <Stack.Screen
+            name="PaymentInformation"
+            component={PaymentInformation}
+          />
+          <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
+
+          <Stack.Screen name="BottomTabs" component={Layout} />
+          <Stack.Screen name="Notification" component={NotificationScreen} />
+          <Stack.Screen
+            name="QuickWorkoutFirst"
+            component={QuickWorkoutFirst}
+          />
+          <Stack.Screen
+            name="QuickWorkoutSecond"
+            component={QuickWorkoutSecond}
+          />
+          <Stack.Screen name="StartWorkout" component={StartWorkout} />
+          <Stack.Screen name="PracticeWorkout" component={PracticeWorkout} />
+          <Stack.Screen name="LearnPros" component={LearnFromPros} />
+          <Stack.Screen name="ProsDetail" component={ProsDetails} />
+          <Stack.Screen
+            name="DrilLibraryDetail"
+            component={DrilLibraryDetail}
+          />
+          <Stack.Screen
+            name="WorkoutProfileDetail"
+            component={WorkoutProfileDetail}
+          />
+          <Stack.Screen name="HelpSupport" component={HelpSupport} />
+          <Stack.Screen name="HelpChat" component={HelpChat} />
+          <Stack.Screen
+            name="BeforeSubscribe"
+            component={BeforeSubscribedPlan}
+          />
+          <Stack.Screen name="AfterSubscribe" component={AfterSubscribed} />
+          <Stack.Screen name="Settings" component={MainSettings} />
+          <Stack.Screen
+            name="SettingsChangePassword"
+            component={SettingsChangePassword}
+          />
+          <Stack.Screen name="Prefrence" component={Prefrence} />
+          <Stack.Screen name="Language" component={Languages} />
+          <Stack.Screen name="NotificationPrefrence" component={NotificationPrefrence} />
+          <Stack.Screen name="PlaybackSettings" component={PlaybackSettings} />
+          <Stack.Screen name="VideoQuality" component={VideoQuality} />
+          <Stack.Screen name="EditProfileInformation" component={EditProfileInformation} />
+          <Stack.Screen name="PodcastDetail" component={PodcastDetail} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -132,85 +233,9 @@ export default function App() {
     >
     <AuthProvider>
       <BrandingProvider>
-        <SafeAreaView
-          style={{ flex: 1, backgroundColor: "#000" }}
-          edges={["bottom"]}
-        >
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Welcome" component={WelcomeScreen} />
-              <Stack.Screen name="OnboardingFirst" component={OnboardingFirst} />
-              <Stack.Screen name="OnboardingSecond" component={OnboardingSecond} />
-              <Stack.Screen name="OnboardingThird" component={OnboardingThird} />
-              <Stack.Screen name="Signin" component={SigninScreen} />
-              <Stack.Screen name="Signup" component={SignupScreen} />
-              <Stack.Screen name="IntroVideo" component={IntroductionVideo} />
-              <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
-              <Stack.Screen name="OTPVerify" component={OTPVerification} />
-              <Stack.Screen name="NewPassword" component={NewPassword} />
-              <Stack.Screen name="Success" component={SuccessScreen} />
-              <Stack.Screen name="OnboardingDetail" component={Details} />
-              <Stack.Screen name="OnboardingHeight" component={Height} />
-              <Stack.Screen
-                name="OnboardingExperienceLevel"
-                component={ExperienceLevel}
-              />
-              <Stack.Screen
-                name="OnboardingWorking"
-                component={OnboardingWorking}
-              />
-              <Stack.Screen name="OnboardingTrain" component={OnboardingTrain} />
-              <Stack.Screen name="Subscription" component={Subscription} />
-              <Stack.Screen
-                name="PaymentInformation"
-                component={PaymentInformation}
-              />
-              <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
-
-              <Stack.Screen name="BottomTabs" component={Layout} />
-              <Stack.Screen name="Notification" component={NotificationScreen} />
-              <Stack.Screen
-                name="QuickWorkoutFirst"
-                component={QuickWorkoutFirst}
-              />
-              <Stack.Screen
-                name="QuickWorkoutSecond"
-                component={QuickWorkoutSecond}
-              />
-              <Stack.Screen name="StartWorkout" component={StartWorkout} />
-              <Stack.Screen name="PracticeWorkout" component={PracticeWorkout} />
-              <Stack.Screen name="LearnPros" component={LearnFromPros} />
-              <Stack.Screen name="ProsDetail" component={ProsDetails} />
-              <Stack.Screen
-                name="DrilLibraryDetail"
-                component={DrilLibraryDetail}
-              />
-              <Stack.Screen
-                name="WorkoutProfileDetail"
-                component={WorkoutProfileDetail}
-              />
-              <Stack.Screen name="HelpSupport" component={HelpSupport} />
-              <Stack.Screen name="HelpChat" component={HelpChat} />
-              <Stack.Screen
-                name="BeforeSubscribe"
-                component={BeforeSubscribedPlan}
-              />
-              <Stack.Screen name="AfterSubscribe" component={AfterSubscribed} />
-              <Stack.Screen name="Settings" component={MainSettings} />
-              <Stack.Screen
-                name="SettingsChangePassword"
-                component={SettingsChangePassword}
-              />
-              <Stack.Screen name="Prefrence" component={Prefrence} />
-              <Stack.Screen name="Language" component={Languages} />
-              <Stack.Screen name="NotificationPrefrence" component={NotificationPrefrence} />
-              <Stack.Screen name="PlaybackSettings" component={PlaybackSettings} />
-              <Stack.Screen name="VideoQuality" component={VideoQuality} />
-              <Stack.Screen name="EditProfileInformation" component={EditProfileInformation} />
-              <Stack.Screen name="PodcastDetail" component={PodcastDetail} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </SafeAreaView>
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
       </BrandingProvider>
     </AuthProvider>
     </ClerkProvider>

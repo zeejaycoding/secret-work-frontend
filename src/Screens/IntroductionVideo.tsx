@@ -9,6 +9,7 @@ import {
   Image,
 } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
+import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
 import {
   responsiveHeight,
@@ -16,10 +17,18 @@ import {
 } from "react-native-responsive-dimensions";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import {
+  useAppTheme,
+  ThemeColors,
+  overlayGradient,
+} from "../context/ThemeContext";
 
 const IntroductionVideo = () => {
   const navigation = useNavigation<any>();
   const videoRef = useRef<Video>(null);
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
+  const overlays = overlayGradient(isDarkMode);
 
   const [isPaused, setIsPaused] = useState(false);
   const [showButton, setShowButton] = useState(false);
@@ -78,7 +87,7 @@ const IntroductionVideo = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <Video
@@ -91,7 +100,15 @@ const IntroductionVideo = () => {
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
       />
 
-      <View style={styles.overlay} />
+      <View style={[styles.overlay, { backgroundColor: isDarkMode ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.20)" }]} />
+
+      <LinearGradient
+        colors={overlays.bottom.colors}
+        locations={overlays.bottom.locations}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={[styles.bottomOverlay, { bottom: 0 }]}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -110,7 +127,7 @@ const IntroductionVideo = () => {
           <Ionicons
             name={isPaused ? "play" : "pause"}
             size={moderateScale(30)}
-            color="#fff"
+            color={colors.white}
           />
         </TouchableOpacity>
       )}
@@ -143,79 +160,87 @@ const IntroductionVideo = () => {
 
 export default IntroductionVideo;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  video: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-  },
+    video: {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+    },
 
-  overlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
+     overlay: {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      backgroundColor: "rgba(0,0,0,0.45)",
+    },
 
-  logoContainer: {
-    alignItems: "center",
-    marginTop: responsiveHeight(7),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: "100%",
+      height: "100%",
+    },
 
-  logoImage: {
-    width: responsiveWidth(22),
-    height: responsiveHeight(8),
-  },
+    logoContainer: {
+      alignItems: "center",
+      marginTop: responsiveHeight(7),
+    },
 
-  playButton: {
-    position: "absolute",
-    top: responsiveHeight(45),
-    alignSelf: "center",
-    width: moderateScale(70),
-    height: moderateScale(70),
-    borderRadius: moderateScale(100),
-    backgroundColor: "rgba(0, 0, 0, 0.68)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    logoImage: {
+      width: responsiveWidth(22),
+      height: responsiveHeight(8),
+    },
 
-  bottomContainer: {
-    position: "absolute",
-    bottom: responsiveHeight(2),
-    width: "100%",
-    alignItems: "center",
-  },
+    playButton: {
+      position: "absolute",
+      top: responsiveHeight(45),
+      alignSelf: "center",
+      width: moderateScale(70),
+      height: moderateScale(70),
+      borderRadius: moderateScale(100),
+      backgroundColor: "rgba(0, 0, 0, 0.68)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  progressBarContainer: {
-    width: responsiveWidth(85),
-    height: moderateScale(6.5),
-    backgroundColor: "#161616",
-    borderRadius: moderateScale(20),
-    overflow: "hidden",
-  },
+    bottomContainer: {
+      position: "absolute",
+      bottom: responsiveHeight(2),
+      width: "100%",
+      alignItems: "center",
+    },
 
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#FF1F2D",
-  },
+    progressBarContainer: {
+      width: responsiveWidth(85),
+      height: moderateScale(6.5),
+      backgroundColor: colors.backgroundInput,
+      borderRadius: moderateScale(20),
+      overflow: "hidden",
+    },
 
-  startButton: {
-    width: responsiveWidth(90),
-    height: responsiveHeight(6.5),
-    backgroundColor: "#FF1F2D",
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    progressBar: {
+      height: "100%",
+      backgroundColor: "#FF1F2D",
+    },
 
-  startButtonText: {
-    color: "#fff",
-    fontSize: moderateScale(14),
-    fontFamily: "Inter-Medium",
-  },
-});
+    startButton: {
+      width: responsiveWidth(90),
+      height: responsiveHeight(6.5),
+      backgroundColor: "#FF1F2D",
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    startButtonText: {
+      color: colors.white,
+      fontSize: moderateScale(14),
+      fontFamily: "Inter-Medium",
+    },
+  });

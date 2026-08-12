@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
-  ImageBackground,
   Image,
   StatusBar,
   Text,
@@ -10,7 +9,6 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
 import {
   responsiveHeight,
@@ -19,6 +17,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { getPros } from "../../services/api";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const PRO_PRIORITY = ["latin", "cooper", "corey", "destiny", "jayson"];
 
@@ -30,6 +29,8 @@ const rankPro = (name: string) => {
 
 const LearnFromPros = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [players, setPlayers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -64,74 +65,10 @@ const LearnFromPros = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
-      <ImageBackground
-        source={require("../../assets/forgotpassword.png")}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <LinearGradient
-          colors={[
-            "rgba(120,0,10,0.30)",
-            "rgba(180,0,15,0.20)",
-            "rgba(255,0,21,0.10)",
-            "rgba(255,0,21,0.05)",
-            "transparent",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.redHorizontal}
-        />
-
-        <LinearGradient
-          colors={[
-            "rgba(255,0,21,0.08)",
-            "rgba(255,0,21,0.05)",
-            "rgba(255,0,21,0.03)",
-            "rgba(255,0,21,0.015)",
-            "rgba(255,0,21,0.005)",
-            "transparent",
-          ]}
-          locations={[0, 0.2, 0.4, 0.6, 0.8, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.redVertical}
-        />
-
-        <LinearGradient
-          colors={[
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.05)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.55)",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.sideOverlay}
-        />
-
-        <LinearGradient
-          colors={[
-            "transparent",
-            "rgba(0,0,0,0.02)",
-            "rgba(0,0,0,0.06)",
-            "rgba(0,0,0,0.10)",
-            "rgba(0,0,0,0.18)",
-            "rgba(0,0,0,0.22)",
-            "rgba(0,0,0,0.25)",
-            "rgba(0,0,0,0.95)",
-          ]}
-          locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.bottomOverlay}
-        />
-
+      <View style={styles.background}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -145,7 +82,7 @@ const LearnFromPros = () => {
               <Ionicons
                 name="chevron-back"
                 size={moderateScale(20)}
-                color="#fff"
+                color={colors.text}
               />
             </TouchableOpacity>
           </View>
@@ -176,17 +113,6 @@ const LearnFromPros = () => {
                     }
                     style={styles.cardImage}
                   />
-
-                  <LinearGradient
-                    colors={[
-                      "transparent",
-                      "rgba(0,0,0,0.10)",
-                      "rgba(0,0,0,0.35)",
-                    ]}
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                    style={styles.cardOverlay}
-                  />
                 </View>
 
                 <Text style={styles.playerName}>{item.name}</Text>
@@ -196,54 +122,23 @@ const LearnFromPros = () => {
 
           <View style={{ height: responsiveHeight(4) }} />
         </ScrollView>
-      </ImageBackground>
+      </View>
     </View>
   );
 };
 
 export default LearnFromPros;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
-  backgroundImage: {
+  background: {
     flex: 1,
-    width: responsiveWidth(100),
-    height: responsiveHeight(40),
-  },
-
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
-
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
-
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
-
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(50),
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -260,7 +155,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: responsiveWidth(6),
-    backgroundColor: "#ffffff10",
+    backgroundColor: colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: responsiveHeight(1),
@@ -272,13 +167,13 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(22),
     fontFamily: "Inter-Medium",
   },
 
   description: {
-    color: "#929292",
+    color: colors.textSecondary,
     fontSize: moderateScale(11),
     lineHeight: moderateScale(16),
     width: responsiveWidth(82),
@@ -300,9 +195,9 @@ const styles = StyleSheet.create({
     height: responsiveHeight(22),
     borderRadius: moderateScale(14),
     overflow: "hidden",
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 1,
-    borderColor: "#161616",
+    borderColor: colors.backgroundInput,
   },
 
   cardImage: {
@@ -311,14 +206,8 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
 
-  cardOverlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-  },
-
   playerName: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     marginTop: responsiveHeight(1),
     marginLeft: responsiveWidth(1),

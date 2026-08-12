@@ -9,10 +9,30 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { getTopCoach } from "../../../services/api";
+import { useAppTheme, ThemeColors } from "../../../context/ThemeContext";
 
 const QuickWorkout = () => {
   const navigation = useNavigation<any>();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
   const [coachName, setCoachName] = useState("");
+  const gradientColors = (
+    isDarkMode
+      ? [
+          "rgba(0, 0, 0, 0.75)",
+          "rgba(32, 0, 35, 0.85)",
+          "rgba(77, 0, 80, 0.95)",
+          "rgba(33, 0, 35, 0.85)",
+          "rgba(0, 0, 0, 0.75)",
+        ]
+      : [
+          "rgba(229,9,192,0.04)",
+          "rgba(229,9,192,0.07)",
+          "rgba(229,9,192,0.10)",
+          "rgba(229,9,192,0.07)",
+          "rgba(229,9,192,0.04)",
+        ]
+  ) as [string, string, string, string, string];
 
   useEffect(() => {
     let mounted = true;
@@ -31,13 +51,7 @@ const QuickWorkout = () => {
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.learnCard}>
       <LinearGradient
-        colors={[
-          "rgba(0, 0, 0, 0.75)",
-          "rgba(32, 0, 35, 0.85)",
-          "rgba(77, 0, 80, 0.95)",
-          "rgba(33, 0, 35, 0.85)",
-          "rgba(0, 0, 0, 0.75)",
-        ]}
+        colors={gradientColors}
         locations={[0, 0.2, 0.5, 0.8, 1]}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
@@ -63,7 +77,11 @@ const QuickWorkout = () => {
                 Quick Workouts with {coachName || "Coach Hudson"}
               </Text>
 
-              <Text style={styles.learnDesc}>Wednesday 8pm Est</Text>
+              <Text
+                style={[styles.learnDesc, { color: isDarkMode ? "#AB65A8" : "#8A3A86" }]}
+              >
+                Wednesday 8pm Est
+              </Text>
             </View>
           </View>
 
@@ -80,7 +98,8 @@ const QuickWorkout = () => {
 
 export default QuickWorkout;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   learnCard: {
     width: responsiveWidth(93),
     alignSelf: "center",
@@ -88,8 +107,8 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(12),
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#251313",
-    backgroundColor: "#120004",
+    borderColor: "rgba(229,9,192,0.15)",
+    backgroundColor: colors.backgroundElevated,
     position: "relative",
   },
 
@@ -146,13 +165,12 @@ const styles = StyleSheet.create({
   },
 
   learnTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(12),
     fontFamily: "Poppins-Medium",
   },
 
   learnDesc: {
-    color: "#AB65A8",
     fontSize: moderateScale(10),
     fontFamily: "Inter-Regular",
   },

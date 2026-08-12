@@ -21,6 +21,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import { markDrillComplete, recordDrillView, reportWatchTime } from "../../services/api";
 import { getCachedPreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const QUALITY_OPTIONS = ["Auto", "1080p", "720p", "480p", "360p"];
 
@@ -71,6 +72,8 @@ const VideoPlayer = ({
   onOpenQuality,
 }: VideoPlayerProps) => {
   const { primaryColor } = useBranding();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
   const videoRef = useRef<Video>(null);
   const completionSent = useRef(false);
   const viewSent = useRef(false);
@@ -175,16 +178,18 @@ const VideoPlayer = ({
           <Ionicons
             name="videocam-off-outline"
             size={moderateScale(26)}
-            color="#666666"
+            color={colors.textSecondary}
           />
           <Text style={styles.videoPlaceholderText}>Video coming soon</Text>
         </View>
       )}
 
-      <LinearGradient
-        colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.95)"]}
-        style={styles.overlay}
-      />
+      {isDarkMode && (
+        <LinearGradient
+          colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.95)"]}
+          style={styles.overlay}
+        />
+      )}
 
       {videoSource && (
         <TouchableOpacity
@@ -199,7 +204,7 @@ const VideoPlayer = ({
           style={styles.closeButton}
           onPress={onClose}
         >
-          <Ionicons name="close" size={moderateScale(22)} color="#FFFFFF" />
+          <Ionicons name="close" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
       )}
 
@@ -208,7 +213,7 @@ const VideoPlayer = ({
           <Ionicons
             name={paused ? "play" : "pause"}
             size={moderateScale(22)}
-            color="#FFFFFF"
+            color={colors.white}
           />
         </View>
       )}
@@ -238,7 +243,7 @@ const VideoPlayer = ({
             <Ionicons
               name={mode === "fullscreen" ? "contract" : "expand"}
               size={moderateScale(15)}
-              color="#FFFFFF"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -249,7 +254,7 @@ const VideoPlayer = ({
             <Ionicons
               name="settings-outline"
               size={moderateScale(15)}
-              color="#FFFFFF"
+              color={colors.text}
             />
           </TouchableOpacity>
         </View>
@@ -260,6 +265,8 @@ const VideoPlayer = ({
 
 const DrilLibraryDetail = ({ route }: any) => {
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const navigation = useNavigation<any>();
   const drill = route?.params?.drill;
 
@@ -319,7 +326,7 @@ const DrilLibraryDetail = ({ route }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <ScrollView
@@ -369,7 +376,7 @@ const DrilLibraryDetail = ({ route }: any) => {
               <Text style={styles.qualityTitle}>Video quality</Text>
 
               <TouchableOpacity onPress={() => setShowQuality(false)}>
-                <Ionicons name="close" size={moderateScale(20)} color="#fff" />
+                <Ionicons name="close" size={moderateScale(20)} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -397,7 +404,7 @@ const DrilLibraryDetail = ({ route }: any) => {
                       <Ionicons
                         name="checkmark"
                         size={moderateScale(10)}
-                        color={active ? "#fff" : "#666"}
+                        color={active ? colors.white : colors.textSecondary}
                       />
                     </View>
 
@@ -422,10 +429,11 @@ const DrilLibraryDetail = ({ route }: any) => {
 
 export default DrilLibraryDetail;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.background,
   },
 
   scrollContainer: {
@@ -447,7 +455,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     height: "100%",
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
     zIndex: 999,
   },
 
@@ -459,13 +467,13 @@ const styles = StyleSheet.create({
   videoPlaceholder: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     justifyContent: "center",
     alignItems: "center",
   },
 
   videoPlaceholderText: {
-    color: "#666666",
+    color: colors.textSecondary,
     fontSize: moderateScale(13),
     marginTop: responsiveHeight(1),
     fontFamily: "Inter-Medium",
@@ -502,7 +510,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 5,
@@ -518,7 +526,7 @@ const styles = StyleSheet.create({
   },
 
   timeText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: moderateScale(10),
     marginRight: responsiveWidth(3),
     fontFamily: "Inter-Medium",
@@ -532,7 +540,7 @@ const styles = StyleSheet.create({
   progressBg: {
     width: "100%",
     height: moderateScale(6),
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.borderStrong,
     borderRadius: moderateScale(10),
     overflow: "hidden",
   },
@@ -546,7 +554,7 @@ const styles = StyleSheet.create({
     width: moderateScale(34),
     height: moderateScale(34),
     borderRadius: moderateScale(17),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -565,7 +573,7 @@ const styles = StyleSheet.create({
 
   qualitySheet: {
     width: "100%",
-    backgroundColor: "#050505",
+    backgroundColor: colors.background,
     borderTopLeftRadius: moderateScale(24),
     borderTopRightRadius: moderateScale(24),
     paddingHorizontal: responsiveWidth(4),
@@ -581,7 +589,7 @@ const styles = StyleSheet.create({
   },
 
   qualityTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(20),
     fontFamily: "Inter-Medium",
   },
@@ -595,16 +603,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: responsiveHeight(1.2),
     borderBottomWidth: 1,
-    borderBottomColor: "#111111",
+    borderBottomColor: colors.backgroundElevated,
   },
 
   qualityCheck: {
     width: moderateScale(16),
     height: moderateScale(16),
     borderRadius: moderateScale(50),
-    backgroundColor: "#1F1F1F",
+    backgroundColor: colors.border,
     borderWidth: 1,
-    borderColor: "#1F1F1F",
+    borderColor: colors.border,
     justifyContent: "center",
     alignItems: "center",
     marginRight: responsiveWidth(3),
@@ -616,13 +624,13 @@ const styles = StyleSheet.create({
   },
 
   qualityText: {
-    color: "#8A8F98",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   qualityTextActive: {
-    color: "#8A8F98",
+    color: colors.textMuted,
   },
 
   detailsContainer: {
@@ -631,28 +639,28 @@ const styles = StyleSheet.create({
   },
 
   mainTitle: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(18),
     marginBottom: responsiveHeight(0.2),
     fontFamily: "Inter-Medium",
   },
 
   subTitle: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Regular",
     marginBottom: responsiveHeight(2.5),
   },
 
   descriptionTitle: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(15),
     marginBottom: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
   },
 
   descriptionText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     lineHeight: moderateScale(18),
     fontFamily: "Inter-Regular",

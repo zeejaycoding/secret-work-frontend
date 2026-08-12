@@ -16,16 +16,20 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../context/BrandingContext";
+import { ThemeColors, darkColors } from "../context/ThemeContext";
 
 const OnboardingSecond = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <ImageBackground
@@ -146,154 +150,155 @@ const OnboardingSecond = () => {
 
 export default OnboardingSecond;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  backgroundImage: {
-    flex: 1,
-    width: responsiveWidth(100),
-    height: responsiveHeight(65),
-  },
+    backgroundImage: {
+      flex: 1,
+      width: responsiveWidth(100),
+      height: responsiveHeight(65),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(45),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(45),
+    },
 
-  contentContainer: {
-    flex: 1,
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: responsiveHeight(6),
-    paddingBottom: responsiveHeight(4),
-  },
+    contentContainer: {
+      flex: 1,
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingTop: responsiveHeight(6),
+      paddingBottom: responsiveHeight(4),
+    },
 
-  logo: {
-    width: responsiveWidth(28),
-    height: responsiveHeight(7),
-  },
+    logo: {
+      width: responsiveWidth(28),
+      height: responsiveHeight(7),
+    },
 
-  bottomContent: {
-    width: responsiveWidth(90),
-    alignItems: "center",
-  },
+    bottomContent: {
+      width: responsiveWidth(90),
+      alignItems: "center",
+    },
 
-  indicatorContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: responsiveHeight(2),
-  },
+    indicatorContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: responsiveHeight(2),
+    },
 
-  activeIndicator: {
-    width: responsiveWidth(8),
-    height: responsiveHeight(0.4),
-    backgroundColor: "#E50914",
-    borderRadius: moderateScale(50),
-    marginRight: responsiveWidth(1),
-  },
+    activeIndicator: {
+      width: responsiveWidth(8),
+      height: responsiveHeight(0.4),
+      backgroundColor: "#E50914",
+      borderRadius: moderateScale(50),
+      marginRight: responsiveWidth(1),
+    },
 
-  inactiveIndicator: {
-    width: responsiveWidth(3),
-    height: responsiveHeight(0.4),
-    backgroundColor: "#2A2A2A",
-    borderRadius: moderateScale(50),
-    marginRight: responsiveWidth(1),
-  },
+    inactiveIndicator: {
+      width: responsiveWidth(3),
+      height: responsiveHeight(0.4),
+      backgroundColor: colors.borderStrong,
+      borderRadius: moderateScale(50),
+      marginRight: responsiveWidth(1),
+    },
 
-  title: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(22),
-    textAlign: "center",
-    marginBottom: responsiveHeight(0),
-    fontFamily: "Poppins-Medium",
-  },
+    title: {
+      color: colors.white,
+      fontSize: moderateScale(22),
+      textAlign: "center",
+      marginBottom: responsiveHeight(0),
+      fontFamily: "Poppins-Medium",
+    },
 
-  redText: {
-    color: "#E50914",
-  },
+    redText: {
+      color: "#E50914",
+    },
 
-  description: {
-    width: responsiveWidth(78),
-    color: "#6B6B6B",
-    fontSize: moderateScale(14),
-    textAlign: "center",
-    lineHeight: moderateScale(16),
-    marginBottom: responsiveHeight(2),
-    fontFamily: "Poippins-Regular",
-  },
+    description: {
+      width: responsiveWidth(78),
+      color: colors.textSecondary,
+      fontSize: moderateScale(14),
+      textAlign: "center",
+      lineHeight: moderateScale(16),
+      marginBottom: responsiveHeight(2),
+      fontFamily: "Poippins-Regular",
+    },
 
-  getStartedBtn: {
-    width: responsiveWidth(88),
-    height: responsiveHeight(6.5),
-    backgroundColor: "#E50914",
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(1.2),
-  },
+    getStartedBtn: {
+      width: responsiveWidth(88),
+      height: responsiveHeight(6.5),
+      backgroundColor: "#E50914",
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(1.2),
+    },
 
-  getStartedText: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
+    getStartedText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
 
-  signInBtn: {
-    width: responsiveWidth(88),
-    height: responsiveHeight(6.5),
-    backgroundColor: "#111111",
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(8),
-  },
+    signInBtn: {
+      width: responsiveWidth(88),
+      height: responsiveHeight(6.5),
+      backgroundColor: colors.backgroundElevated,
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(8),
+    },
 
-  signInText: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
+    signInText: {
+      color: colors.text,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
 
-  footerText: {
-    color: "#929292",
-    fontSize: moderateScale(12),
-    textAlign: "center",
-    lineHeight: moderateScale(20),
-    fontFamily: "Poppins-Regular",
-  },
+    footerText: {
+      color: colors.textMuted,
+      fontSize: moderateScale(12),
+      textAlign: "center",
+      lineHeight: moderateScale(20),
+      fontFamily: "Poppins-Regular",
+    },
 
-  footerLink: {
-    color: "#FFFFFF",
-    textDecorationLine: "underline",
-    fontFamily: "Poppins-Regular",
-  },
-});
+    footerLink: {
+      color: colors.white,
+      textDecorationLine: "underline",
+      fontFamily: "Poppins-Regular",
+    },
+  });

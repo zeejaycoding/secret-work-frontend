@@ -21,11 +21,14 @@ import { Audio } from "expo-av";
 
 import { getPodcast, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const PodcastDetail = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const { id } = route.params || {};
   const soundRef = useRef<Audio.Sound | null>(null);
   const [podcast, setPodcast] = useState<any>(null);
@@ -213,7 +216,7 @@ const PodcastDetail = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -282,7 +285,7 @@ const PodcastDetail = () => {
           activeOpacity={0.8}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.cardWrapper}>
@@ -341,7 +344,7 @@ const PodcastDetail = () => {
                   {
                     height: responsiveHeight(barHeight),
 
-                    backgroundColor: isActive ? "#FFFFFF" : "#3A3A3A",
+                    backgroundColor: isActive ? colors.text : colors.switchTrack,
 
                     transform: [
                       {
@@ -363,14 +366,14 @@ const PodcastDetail = () => {
 
         <View style={styles.playerContainer}>
           <TouchableOpacity onPress={toggleRepeat}>
-            <Feather name="repeat" size={moderateScale(16)} color="#fff" />
+            <Feather name="repeat" size={moderateScale(16)} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.smallButton} onPress={skipBack}>
             <Ionicons
               name="play-skip-back"
               size={moderateScale(20)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -382,7 +385,7 @@ const PodcastDetail = () => {
             <Ionicons
               name={isPlaying ? "pause" : "play"}
               size={moderateScale(28)}
-              color="#fff"
+              color={colors.white}
               style={{
                 marginLeft: isPlaying ? 0 : responsiveWidth(1),
               }}
@@ -393,7 +396,7 @@ const PodcastDetail = () => {
             <Ionicons
               name="play-skip-forward"
               size={moderateScale(20)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -401,7 +404,7 @@ const PodcastDetail = () => {
             <MaterialCommunityIcons
               name="shuffle"
               size={moderateScale(20)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
         </View>
@@ -412,10 +415,11 @@ const PodcastDetail = () => {
 
 export default PodcastDetail;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   contentContainer: {
@@ -466,7 +470,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: moderateScale(50),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "flex-start",
@@ -504,7 +508,7 @@ const styles = StyleSheet.create({
     bottom: responsiveHeight(-3),
     alignSelf: "center",
     borderWidth: moderateScale(3),
-    borderColor: "#000",
+    borderColor: colors.background,
     borderRadius: moderateScale(100),
   },
 
@@ -515,14 +519,14 @@ const styles = StyleSheet.create({
   },
 
   authorText: {
-    color: "#8A8F98",
+    color: colors.textMuted,
     fontSize: moderateScale(14),
     marginTop: responsiveHeight(4),
     fontFamily: "Inter-Medium",
   },
 
   titleText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(20),
     textAlign: "center",
     lineHeight: moderateScale(28),
@@ -552,7 +556,7 @@ const styles = StyleSheet.create({
   },
 
   timeText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
@@ -560,7 +564,7 @@ const styles = StyleSheet.create({
   playerContainer: {
     width: responsiveWidth(92),
     height: responsiveHeight(9),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(22),
     flexDirection: "row",
     alignItems: "center",
@@ -572,7 +576,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: responsiveWidth(100),
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.borderStrong,
     justifyContent: "center",
     alignItems: "center",
   },

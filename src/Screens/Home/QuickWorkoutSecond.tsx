@@ -23,12 +23,15 @@ import {
 } from "@expo/vector-icons";
 import { getQuickWorkout } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { sumDurations } from "../../utils/duration";
 
 const QuickWorkoutSecond = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDrills, setSelectedDrills] = useState<any[]>([]);
   const [drillsData, setDrillsData] = useState<any[]>([]);
@@ -120,285 +123,305 @@ const QuickWorkoutSecond = () => {
   };
   const levelLabel = levelLabelMap[level] || level;
 
+  const content = (
+    <>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.mainScrollContainer}
+      >
+        <View style={styles.contentContainer}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Feather
+              name="chevron-left"
+              size={moderateScale(22)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.progressContainer}>
+            <Text style={styles.stepText}>Step 2 of 2</Text>
+
+            <View style={styles.progressBar}>
+              <View style={styles.progressFill} />
+            </View>
+          </View>
+
+          <View style={styles.headingContainer}>
+            <Text style={styles.heading}>Drilling skills</Text>
+
+            <Text style={styles.subHeading}>
+              {coach
+                ? `Pick up to 5 skills by ${coach}`
+                : "Pickup up to 5 skills"}
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryContainer}
+          >
+            {categories.map((item, index) => {
+              const active = selectedCategory === item;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.categoryButton,
+                    active && styles.activeCategoryButton,
+                  ]}
+                  onPress={() => setSelectedCategory(item)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      active && styles.activeCategoryText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.drillWrapper}>
+            {visibleDrills.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                {drillsData.length === 0 ? (
+                  <>
+                    <Text style={styles.emptyTitle}>
+                      {coach
+                        ? `No ${level === "Random" ? "" : `${level} `}drills from ${coach} yet`
+                        : "No drills available yet"}
+                    </Text>
+
+                    {availableLevels.length > 0 && (
+                      <Text style={styles.emptyDesc}>
+                        Pick a level that has drills:{" "}
+                        {availableLevels.join(", ")}.
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <Text style={styles.emptyTitle}>
+                    No drills in {activeCategory} yet
+                  </Text>
+                )}
+              </View>
+            ) : (
+              visibleDrills.map((item) => {
+                const selected = selectedDrills.includes(item.id);
+
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.drillCard,
+                      selected && styles.activeDrillCard,
+                      selected && { borderColor: primaryColor },
+                    ]}
+                    onPress={() => toggleSelection(item.id)}
+                  >
+                    <View style={styles.leftRow}>
+                      <View
+                        style={[
+                          styles.radioCircle,
+                          selected && styles.activeRadioCircle,
+                        ]}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={moderateScale(18)}
+                          color={selected ? primaryColor : colors.switchTrack}
+                        />
+                      </View>
+
+                      <View>
+                        <Text style={styles.drillTitle}>{item.title}</Text>
+
+                        <Text style={styles.drillSubTitle}>
+                          {item.subTitle}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={styles.bottomFixedContainer}>
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Ionicons
+              name="time"
+              size={moderateScale(13)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+
+            <Text style={styles.infoText}>
+              {sumDurations(selectedItems.map((d: any) => d.duration))}
+            </Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <FontAwesome5
+              name="basketball-ball"
+              size={moderateScale(13)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+
+            <Text style={styles.infoText}>{levelLabel}</Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons
+              name="basketball-hoop"
+              size={moderateScale(13)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+
+            <Text style={styles.infoText}>
+              {selectedItems.length} skill
+              {selectedItems.length === 1 ? "" : "s"} selected
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          disabled={selectedDrills.length === 0}
+          style={[
+            styles.buildButton,
+            { backgroundColor: primaryColor },
+            selectedDrills.length === 0 && styles.buildButtonDisabled,
+          ]}
+          onPress={() =>
+            navigation.navigate("StartWorkout", {
+              drills: selectedItems
+                .map((d: any) => ({
+                  id: d.id,
+                  title: d.title,
+                  category: d.subTitle || "Team workout",
+                  duration: d.duration || "Beginner. 30 Secs",
+                  level: d.level || "",
+                  videoUrl: d.videoUrl || "",
+                  image: d.image || "",
+                  reps: d.reps || "5 Reps",
+                })),
+            })
+          }
+        >
+          <Text style={styles.buildButtonText}>Build my workout</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
-      <ImageBackground
-        source={require("../../assets/forgotpassword.png")}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <LinearGradient
-          colors={[
-            "rgba(120,0,10,0.30)",
-            "rgba(180,0,15,0.20)",
-            "rgba(255,0,21,0.10)",
-            "rgba(255,0,21,0.05)",
-            "transparent",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.redHorizontal}
-        />
-
-        <LinearGradient
-          colors={[
-            "rgba(255,0,21,0.08)",
-            "rgba(255,0,21,0.05)",
-            "rgba(255,0,21,0.03)",
-            "rgba(255,0,21,0.015)",
-            "rgba(255,0,21,0.005)",
-            "transparent",
-          ]}
-          locations={[0, 0.2, 0.4, 0.6, 0.8, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.redVertical}
-        />
-
-        <LinearGradient
-          colors={[
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.05)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.55)",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.sideOverlay}
-        />
-
-        <LinearGradient
-          colors={[
-            "transparent",
-            "rgba(0,0,0,0.02)",
-            "rgba(0,0,0,0.06)",
-            "rgba(0,0,0,0.10)",
-            "rgba(0,0,0,0.18)",
-            "rgba(0,0,0,0.22)",
-            "rgba(0,0,0,0.25)",
-            "rgba(0,0,0,0.95)",
-          ]}
-          locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.bottomOverlay}
-        />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.mainScrollContainer}
+      {isDarkMode ? (
+        <ImageBackground
+          source={require("../../assets/forgotpassword.png")}
+          resizeMode="cover"
+          style={styles.backgroundImage}
         >
-          <View style={styles.contentContainer}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Feather
-                name="chevron-left"
-                size={moderateScale(22)}
-                color="#fff"
-              />
-            </TouchableOpacity>
-
-            <View style={styles.progressContainer}>
-              <Text style={styles.stepText}>Step 2 of 2</Text>
-
-              <View style={styles.progressBar}>
-                <View style={styles.progressFill} />
-              </View>
-            </View>
-
-            <View style={styles.headingContainer}>
-              <Text style={styles.heading}>Drilling skills</Text>
-
-              <Text style={styles.subHeading}>
-                {coach
-                  ? `Pick up to 5 skills by ${coach}`
-                  : "Pickup up to 5 skills"}
-              </Text>
-            </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoryContainer}
-            >
-              {categories.map((item, index) => {
-                const active = selectedCategory === item;
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    activeOpacity={0.8}
-                    style={[
-                      styles.categoryButton,
-                      active && styles.activeCategoryButton,
-                    ]}
-                    onPress={() => setSelectedCategory(item)}
-                  >
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        active && styles.activeCategoryText,
-                      ]}
-                    >
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            <View style={styles.drillWrapper}>
-              {visibleDrills.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  {drillsData.length === 0 ? (
-                    <>
-                      <Text style={styles.emptyTitle}>
-                        {coach
-                          ? `No ${level === "Random" ? "" : `${level} `}drills from ${coach} yet`
-                          : "No drills available yet"}
-                      </Text>
-
-                      {availableLevels.length > 0 && (
-                        <Text style={styles.emptyDesc}>
-                          Pick a level that has drills:{" "}
-                          {availableLevels.join(", ")}.
-                        </Text>
-                      )}
-                    </>
-                  ) : (
-                    <Text style={styles.emptyTitle}>
-                      No drills in {activeCategory} yet
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                visibleDrills.map((item) => {
-                  const selected = selectedDrills.includes(item.id);
-
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      activeOpacity={0.8}
-                      style={[
-                        styles.drillCard,
-                        selected && styles.activeDrillCard,
-                        selected && { borderColor: primaryColor },
-                      ]}
-                      onPress={() => toggleSelection(item.id)}
-                    >
-                      <View style={styles.leftRow}>
-                        <View
-                          style={[
-                            styles.radioCircle,
-                            selected && styles.activeRadioCircle,
-                          ]}
-                        >
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={moderateScale(18)}
-                            color={selected ? primaryColor : "#3A3A3A"}
-                          />
-                        </View>
-
-                        <View>
-                          <Text style={styles.drillTitle}>{item.title}</Text>
-
-                          <Text style={styles.drillSubTitle}>
-                            {item.subTitle}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
-          </View>
-        </ScrollView>
-
-        <View style={styles.bottomFixedContainer}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
-              <Ionicons name="time" size={moderateScale(13)} color="#FFFFFF" />
-
-              <Text style={styles.infoText}>
-                {sumDurations(selectedItems.map((d: any) => d.duration))}
-              </Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <FontAwesome5
-                name="basketball-ball"
-                size={moderateScale(13)}
-                color="#FFFFFF"
-              />
-
-              <Text style={styles.infoText}>{levelLabel}</Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <MaterialCommunityIcons
-                name="basketball-hoop"
-                size={moderateScale(13)}
-                color="#FFFFFF"
-              />
-
-              <Text style={styles.infoText}>
-                {selectedItems.length} skill
-                {selectedItems.length === 1 ? "" : "s"} selected
-              </Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            disabled={selectedDrills.length === 0}
-            style={[
-              styles.buildButton,
-              { backgroundColor: primaryColor },
-              selectedDrills.length === 0 && styles.buildButtonDisabled,
+          <LinearGradient
+            colors={[
+              "rgba(120,0,10,0.30)",
+              "rgba(180,0,15,0.20)",
+              "rgba(255,0,21,0.10)",
+              "rgba(255,0,21,0.05)",
+              "transparent",
             ]}
-            onPress={() =>
-              navigation.navigate("StartWorkout", {
-                drills: selectedItems
-                  .map((d: any) => ({
-                    id: d.id,
-                    title: d.title,
-                    category: d.subTitle || "Team workout",
-                    duration: d.duration || "Beginner. 30 Secs",
-                    level: d.level || "",
-                    videoUrl: d.videoUrl || "",
-                    image: d.image || "",
-                    reps: d.reps || "5 Reps",
-                  })),
-              })
-            }
-          >
-            <Text style={styles.buildButtonText}>Build my workout</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+            locations={[0, 0.25, 0.5, 0.75, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.redHorizontal}
+          />
+
+          <LinearGradient
+            colors={[
+              "rgba(255,0,21,0.08)",
+              "rgba(255,0,21,0.05)",
+              "rgba(255,0,21,0.03)",
+              "rgba(255,0,21,0.015)",
+              "rgba(255,0,21,0.005)",
+              "transparent",
+            ]}
+            locations={[0, 0.2, 0.4, 0.6, 0.8, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.redVertical}
+          />
+
+          <LinearGradient
+            colors={[
+              "rgba(0,0,0,0.55)",
+              "rgba(0,0,0,0.20)",
+              "rgba(0,0,0,0.05)",
+              "rgba(0,0,0,0.20)",
+              "rgba(0,0,0,0.55)",
+            ]}
+            locations={[0, 0.25, 0.5, 0.75, 1]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.sideOverlay}
+          />
+
+          <LinearGradient
+            colors={[
+              "transparent",
+              "rgba(0,0,0,0.02)",
+              "rgba(0,0,0,0.06)",
+              "rgba(0,0,0,0.10)",
+              "rgba(0,0,0,0.18)",
+              "rgba(0,0,0,0.22)",
+              "rgba(0,0,0,0.25)",
+              "rgba(0,0,0,0.95)",
+            ]}
+            locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.bottomOverlay}
+          />
+
+          {content}
+        </ImageBackground>
+      ) : (
+        <View style={styles.lightBackground}>{content}</View>
+      )}
     </View>
   );
 };
 
 export default QuickWorkoutSecond;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
+  },
+
+  lightBackground: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
 
   backgroundImage: {
@@ -452,7 +475,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: responsiveWidth(6),
-    backgroundColor: "#ffffff10",
+    backgroundColor: isDarkMode ? "#ffffff10" : colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -462,7 +485,7 @@ const styles = StyleSheet.create({
   },
 
   stepText: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(14),
     marginBottom: responsiveHeight(1.2),
     fontFamily: "Inter-Medium",
@@ -471,7 +494,7 @@ const styles = StyleSheet.create({
   progressBar: {
     width: "100%",
     height: responsiveHeight(0.9),
-    backgroundColor: "#1B1B1B",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: 100,
     overflow: "hidden",
   },
@@ -487,13 +510,13 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(18),
     fontFamily: "Inter-Medium",
   },
 
   subHeading: {
-    color: "#7D7D7D",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     marginTop: responsiveHeight(0.3),
     fontFamily: "Inter-Regular",
@@ -507,7 +530,7 @@ const styles = StyleSheet.create({
   categoryButton: {
     height: responsiveHeight(4.1),
     paddingHorizontal: responsiveWidth(4),
-    backgroundColor: "#121212",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(10),
     justifyContent: "center",
     alignItems: "center",
@@ -519,13 +542,13 @@ const styles = StyleSheet.create({
   },
 
   categoryText: {
-    color: "#9C9C9C",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   activeCategoryText: {
-    color: "#fff",
+    color: colors.white,
   },
 
   drillWrapper: {
@@ -540,14 +563,14 @@ const styles = StyleSheet.create({
   },
 
   emptyTitle: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(14),
     textAlign: "center",
     fontFamily: "Inter-Medium",
   },
 
   emptyDesc: {
-    color: "#8B8B8B",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     textAlign: "center",
     marginTop: responsiveHeight(1),
@@ -557,17 +580,17 @@ const styles = StyleSheet.create({
   drillCard: {
     width: "100%",
     minHeight: responsiveHeight(7.5),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(12),
     borderWidth: 1,
-    borderColor: "#0A0A0A",
+    borderColor: colors.backgroundCard,
     paddingHorizontal: responsiveWidth(4),
     justifyContent: "center",
     marginBottom: responsiveHeight(1.2),
   },
 
   activeDrillCard: {
-    backgroundColor: "#1A0002",
+    backgroundColor: isDarkMode ? "#1A0002" : "rgba(229,9,20,0.10)",
     borderColor: "#E50914",
   },
 
@@ -587,13 +610,13 @@ const styles = StyleSheet.create({
   activeRadioCircle: {},
 
   drillTitle: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },
 
   drillSubTitle: {
-    color: "#7B7B7B",
+    color: colors.textFaint,
     fontSize: moderateScale(11),
     marginTop: responsiveHeight(0.3),
     fontFamily: "Inter-Regular",
@@ -606,9 +629,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveWidth(4),
     paddingTop: responsiveHeight(1.5),
     paddingBottom: responsiveHeight(2),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderTopWidth: 1,
-    borderTopColor: "#151515",
+    borderTopColor: colors.border,
   },
 
   infoRow: {
@@ -626,7 +649,7 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: "#8B8B8B",
+    color: isDarkMode ? colors.textMuted : "#000000",
     fontSize: moderateScale(11),
     marginLeft: responsiveWidth(1),
     fontFamily: "Inter-Medium",
@@ -642,7 +665,7 @@ const styles = StyleSheet.create({
   },
 
   buildButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },

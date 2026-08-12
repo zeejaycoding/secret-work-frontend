@@ -21,6 +21,7 @@ import * as Animatable from "react-native-animatable";
 import { Alert, ActivityIndicator } from "react-native";
 import { updateMe } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { ThemeColors, darkColors } from "../../context/ThemeContext";
 
 const ITEM_HEIGHT = responsiveHeight(6.5);
 
@@ -29,6 +30,9 @@ const heights = Array.from({ length: 101 }, (_, i) => 120 + i);
 const Height = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
   const flatListRef = useRef<FlatList>(null);
   const [selectedHeight, setSelectedHeight] = useState(164);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +70,7 @@ const Height = () => {
     if (distance === 0) {
       return {
         fontSize: moderateScale(48),
-        color: "#FFFFFF",
+        color: colors.text,
         opacity: 1,
         fontWeight: "700" as const,
       };
@@ -75,7 +79,7 @@ const Height = () => {
     if (distance === 1) {
       return {
         fontSize: moderateScale(38),
-        color: "#FFFFFF",
+        color: colors.text,
         opacity: 0.95,
         fontWeight: "600" as const,
       };
@@ -84,7 +88,7 @@ const Height = () => {
     if (distance === 2) {
       return {
         fontSize: moderateScale(30),
-        color: "#B0B0B0",
+        color: colors.textMuted,
         opacity: 0.7,
         fontWeight: "500" as const,
       };
@@ -93,7 +97,7 @@ const Height = () => {
     if (distance === 3) {
       return {
         fontSize: moderateScale(24),
-        color: "#808080",
+        color: colors.textMuted,
         opacity: 0.5,
         fontWeight: "500" as const,
       };
@@ -101,7 +105,7 @@ const Height = () => {
 
     return {
       fontSize: moderateScale(18),
-      color: "#505050",
+      color: colors.textSecondary,
       opacity: 0.3,
       fontWeight: "400" as const,
     };
@@ -112,7 +116,7 @@ const Height = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -182,7 +186,7 @@ const Height = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Feather name="arrow-left" size={moderateScale(19)} color="#fff" />
+            <Feather name="arrow-left" size={moderateScale(19)} color={colors.text} />
           </TouchableOpacity>
 
           <Text style={styles.step}>Step 2 of 5</Text>
@@ -256,7 +260,7 @@ const Height = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.white} size="small" />
           ) : (
             <>
               <Text style={styles.buttonText}>Next</Text>
@@ -264,7 +268,7 @@ const Height = () => {
                 name="arrow-right"
                 size={moderateScale(17)}
                 style={{ marginTop: responsiveHeight(0.5) }}
-                color="#fff"
+                color={colors.white}
               />
             </>
           )}
@@ -276,157 +280,158 @@ const Height = () => {
 
 export default Height;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  content: {
-    flex: 1,
-    paddingHorizontal: responsiveWidth(5),
-    paddingTop: responsiveHeight(7),
-  },
+    content: {
+      flex: 1,
+      paddingHorizontal: responsiveWidth(5),
+      paddingTop: responsiveHeight(7),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(40),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(40),
+    },
 
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: responsiveHeight(2),
-  },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: responsiveHeight(2),
+    },
 
-  backButton: {
-    width: responsiveWidth(8),
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
+    backButton: {
+      width: responsiveWidth(8),
+      justifyContent: "center",
+      alignItems: "flex-start",
+    },
 
-  step: {
-    color: "#fff",
-    fontSize: moderateScale(12.5),
-    textAlign: "center",
-    fontFamily: "Poppins-Medium",
-  },
+    step: {
+      color: colors.text,
+      fontSize: moderateScale(12.5),
+      textAlign: "center",
+      fontFamily: "Poppins-Medium",
+    },
 
-  progressBar: {
-    width: "100%",
-    height: responsiveHeight(1),
-    backgroundColor: "#161616",
-    borderRadius: moderateScale(100),
-    overflow: "hidden",
-    marginBottom: responsiveHeight(2.5),
-  },
+    progressBar: {
+      width: "100%",
+      height: responsiveHeight(1),
+      backgroundColor: colors.backgroundInput,
+      borderRadius: moderateScale(100),
+      overflow: "hidden",
+      marginBottom: responsiveHeight(2.5),
+    },
 
-  fill: {
-    height: "100%",
-    backgroundColor: "#FF1F2D",
-  },
+    fill: {
+      height: "100%",
+      backgroundColor: "#FF1F2D",
+    },
 
-  title: {
-    color: "#fff",
-    fontSize: moderateScale(17),
-    fontFamily: "Poppins-Medium",
-  },
+    title: {
+      color: colors.text,
+      fontSize: moderateScale(17),
+      fontFamily: "Poppins-Medium",
+    },
 
-  subtitle: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    marginBottom: responsiveHeight(2.5),
-    fontFamily: "Poppins-Regular",
-  },
+    subtitle: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      marginBottom: responsiveHeight(2.5),
+      fontFamily: "Poppins-Regular",
+    },
 
-  pickerWrapper: {
-    height: responsiveHeight(40),
-    justifyContent: "center",
-    marginTop: responsiveHeight(6),
-  },
+    pickerWrapper: {
+      height: responsiveHeight(40),
+      justifyContent: "center",
+      marginTop: responsiveHeight(6),
+    },
 
-  itemContainer: {
-    height: ITEM_HEIGHT,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    itemContainer: {
+      height: ITEM_HEIGHT,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  heightText: {
-    textAlign: "center",
-    includeFontPadding: false,
-    fontFamily: "Inter-Medium",
-  },
+    heightText: {
+      textAlign: "center",
+      includeFontPadding: false,
+      fontFamily: "Inter-Medium",
+    },
 
-  lineTop: {
-    position: "absolute",
-    top: "27%",
-    width: responsiveWidth(42),
-    alignSelf: "center",
-    height: responsiveHeight(0.25),
-    backgroundColor: "#FF002B",
-    borderRadius: moderateScale(20),
-    zIndex: 10,
-  },
+    lineTop: {
+      position: "absolute",
+      top: "27%",
+      width: responsiveWidth(42),
+      alignSelf: "center",
+      height: responsiveHeight(0.25),
+      backgroundColor: "#FF002B",
+      borderRadius: moderateScale(20),
+      zIndex: 10,
+    },
 
-  lineBottom: {
-    position: "absolute",
-    top: "46%",
-    width: responsiveWidth(42),
-    alignSelf: "center",
-    height: responsiveHeight(0.25),
-    backgroundColor: "#FF002B",
-    borderRadius: moderateScale(20),
-    zIndex: 10,
-  },
+    lineBottom: {
+      position: "absolute",
+      top: "46%",
+      width: responsiveWidth(42),
+      alignSelf: "center",
+      height: responsiveHeight(0.25),
+      backgroundColor: "#FF002B",
+      borderRadius: moderateScale(20),
+      zIndex: 10,
+    },
 
-  cmText: {
-    position: "absolute",
-    right: responsiveWidth(25),
-    top: "36%",
-    color: "#FFFFFF",
-    fontSize: moderateScale(18),
-    fontWeight: "600",
-    zIndex: 20,
-  },
+    cmText: {
+      position: "absolute",
+      right: responsiveWidth(25),
+      top: "36%",
+      color: colors.text,
+      fontSize: moderateScale(18),
+      fontWeight: "600",
+      zIndex: 20,
+    },
 
-  button: {
-    flexDirection: "row",
-    gap: responsiveWidth(2),
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-    backgroundColor: "#E50914",
-  },
+    button: {
+      flexDirection: "row",
+      gap: responsiveWidth(2),
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+      backgroundColor: "#E50914",
+    },
 
-  buttonText: {
-    color: "#fff",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
-});
+    buttonText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
+  });

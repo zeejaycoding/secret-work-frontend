@@ -19,6 +19,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const options = [
   "Account",
@@ -32,6 +33,8 @@ const options = [
 const HelpChat = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [message, setMessage] = useState("");
 
   const [messages, setMessages] = useState([
@@ -60,7 +63,7 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -79,7 +82,7 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
             <Ionicons
               name="chevron-back"
               size={moderateScale(20)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -146,7 +149,7 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Type message"
-              placeholderTextColor="#7A7A7A"
+              placeholderTextColor={colors.textFaint}
               value={message}
               onChangeText={setMessage}
               style={styles.input}
@@ -156,7 +159,7 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
               style={[styles.sendButton, { backgroundColor: primaryColor }]}
               onPress={handleSend}
             >
-              <Ionicons name="send" size={moderateScale(18)} color="#fff" />
+              <Ionicons name="send" size={moderateScale(18)} color={colors.white} />
             </TouchableOpacity>
           </View>
         </View>
@@ -167,10 +170,11 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
 
 export default HelpChat;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContainer: {
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: moderateScale(50),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: responsiveHeight(3),
@@ -203,7 +207,7 @@ const styles = StyleSheet.create({
 
   receiverMessageBox: {
     maxWidth: responsiveWidth(70),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(12),
     paddingHorizontal: responsiveWidth(4),
     paddingVertical: responsiveHeight(1.8),
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
 
   senderMessageBox: {
     maxWidth: responsiveWidth(70),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(12),
     paddingHorizontal: responsiveWidth(4),
     paddingVertical: responsiveHeight(1.8),
@@ -220,21 +224,21 @@ const styles = StyleSheet.create({
   },
 
   messageText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(12),
     lineHeight: moderateScale(19),
     fontFamily: "Inter-Medium",
   },
 
   timeText: {
-    color: "#8A9095",
+    color: colors.textMuted,
     fontSize: moderateScale(10),
     marginTop: responsiveHeight(0.8),
     fontFamily: "Inter-Regular",
   },
 
   bottomContainer: {
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
     paddingTop: responsiveHeight(1.2),
     paddingBottom:
       Platform.OS === "ios" ? responsiveHeight(3) : responsiveHeight(2),
@@ -247,16 +251,16 @@ const styles = StyleSheet.create({
 
   tagButton: {
     borderWidth: 1,
-    borderColor: "#343B40",
+    borderColor: colors.borderStrong,
     borderRadius: moderateScale(20),
     paddingHorizontal: responsiveWidth(3),
     paddingVertical: responsiveHeight(1),
     marginRight: responsiveWidth(1.8),
-    backgroundColor: "#0C0C0C",
+    backgroundColor: colors.backgroundElevated,
   },
 
   tagText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
@@ -271,13 +275,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: responsiveHeight(5.5),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     borderRadius: moderateScale(30),
     paddingHorizontal: responsiveWidth(4),
-    color: "#8A9095",
+    color: colors.textMuted,
     fontSize: moderateScale(13),
     borderWidth: 1,
-    borderColor: "#2A2A2A",
+    borderColor: colors.borderStrong,
     fontFamily: "Inter-Medium",
   },
 

@@ -18,6 +18,7 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { loadPreferences, savePreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 type prefrenceItemProps = {
   title: string;
@@ -62,6 +63,8 @@ const PrefrenceItem = ({
   hasSwitch,
 }: prefrenceItemProps) => {
   const { accentColor } = useBranding();
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const translateX = useRef(
     new Animated.Value(value ? moderateScale(13) : 0),
   ).current;
@@ -92,7 +95,7 @@ const PrefrenceItem = ({
           style={[
             styles.customSwitch,
             {
-              backgroundColor: value ? accentColor : "#3A3A3A",
+              backgroundColor: value ? accentColor : colors.switchTrack,
             },
           ]}
           onPress={handleToggle}
@@ -113,7 +116,7 @@ const PrefrenceItem = ({
           <Ionicons
             name="chevron-forward"
             size={moderateScale(16)}
-            color="#6B6B6B"
+            color={colors.textSecondary}
           />
         </View>
       )}
@@ -123,6 +126,8 @@ const PrefrenceItem = ({
 
 const PlaybackSettings = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     "1": true,
@@ -154,7 +159,7 @@ const PlaybackSettings = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity
@@ -162,7 +167,7 @@ const PlaybackSettings = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Playback Settings</Text>
@@ -192,10 +197,11 @@ const PlaybackSettings = () => {
 
 export default PlaybackSettings;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   headerContainer: {
@@ -209,13 +215,13 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -229,7 +235,7 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     minHeight: responsiveHeight(8.5),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(14),
     flexDirection: "row",
     alignItems: "center",
@@ -260,14 +266,14 @@ const styles = StyleSheet.create({
     width: moderateScale(14),
     height: moderateScale(14),
     borderRadius: moderateScale(100),
-    backgroundColor: "#fff",
+    backgroundColor: colors.text,
   },
 
   iconContainer: {
     width: moderateScale(42),
     height: moderateScale(42),
     borderRadius: moderateScale(100),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -279,14 +285,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(13),
     marginLeft: responsiveWidth(2),
     fontFamily: "Inter-Medium",
   },
 
   languageText: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
     marginRight: responsiveWidth(2),

@@ -20,6 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createCheckoutSession, getSubscriptionStatus, getPlans } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { ThemeColors, darkColors } from "../../context/ThemeContext";
 
 const FALLBACK_BENEFITS = [
   "Unlimited Access to All Drills",
@@ -32,6 +33,9 @@ const FALLBACK_BENEFITS = [
 const Subscription = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
 
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annually">(
     "monthly",
@@ -117,7 +121,7 @@ const Subscription = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -188,7 +192,7 @@ const Subscription = () => {
           <MaterialIcons
             name="arrow-back-ios-new"
             size={moderateScale(16)}
-            color="#fff"
+            color={colors.text}
           />
         </TouchableOpacity>
 
@@ -270,7 +274,7 @@ const Subscription = () => {
                     <Ionicons
                       name="checkmark"
                       size={moderateScale(8)}
-                      color="#fff"
+                      color={colors.white}
                     />
                   </View>
 
@@ -292,7 +296,7 @@ const Subscription = () => {
                 style={styles.subscribeGradient}
               >
                 {loading ? (
-                  <ActivityIndicator color="#fff" size="small" />
+                  <ActivityIndicator color={colors.white} size="small" />
                 ) : (
                   <Text style={styles.subscribeText}>Subscribe</Text>
                 )}
@@ -314,220 +318,221 @@ const Subscription = () => {
 
 export default Subscription;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  safeContainer: {
-    flex: 1,
-    paddingTop: responsiveHeight(3.8),
-  },
+    safeContainer: {
+      flex: 1,
+      paddingTop: responsiveHeight(3.8),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(40),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(40),
+    },
 
-  backButton: {
-    marginTop: responsiveHeight(2),
-    marginLeft: responsiveWidth(4),
-    width: moderateScale(40),
-    height: moderateScale(40),
-    justifyContent: "center",
-    backgroundColor: "#00000092",
-    borderRadius: "50%",
-    alignItems: "center",
-  },
+    backButton: {
+      marginTop: responsiveHeight(2),
+      marginLeft: responsiveWidth(4),
+      width: moderateScale(40),
+      height: moderateScale(40),
+      justifyContent: "center",
+      backgroundColor: "#00000092",
+      borderRadius: "50%",
+      alignItems: "center",
+    },
 
-  contentContainer: {
-    flex: 1,
-    justifyContent: "flex-start",
-    paddingHorizontal: responsiveWidth(3),
-    paddingBottom: responsiveHeight(5),
-    paddingTop: responsiveHeight(1),
-  },
+    contentContainer: {
+      flex: 1,
+      justifyContent: "flex-start",
+      paddingHorizontal: responsiveWidth(3),
+      paddingBottom: responsiveHeight(5),
+      paddingTop: responsiveHeight(1),
+    },
 
-  switchContainer: {
-    width: "100%",
-    height: responsiveHeight(5.5),
-    backgroundColor: "#111111",
-    borderRadius: moderateScale(12),
-    flexDirection: "row",
-    alignItems: "center",
-    padding: moderateScale(4),
-    marginBottom: responsiveHeight(1.8),
-    borderWidth: 1,
-    borderColor: "#1F1F1F",
-  },
+    switchContainer: {
+      width: "100%",
+      height: responsiveHeight(5.5),
+      backgroundColor: colors.backgroundElevated,
+      borderRadius: moderateScale(12),
+      flexDirection: "row",
+      alignItems: "center",
+      padding: moderateScale(4),
+      marginBottom: responsiveHeight(1.8),
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
 
-  switchButton: {
-    flex: 1,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: moderateScale(10),
-  },
+    switchButton: {
+      flex: 1,
+      height: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: moderateScale(10),
+    },
 
-  activeSwitch: {
-    borderWidth: 1,
-    borderColor: "#929292",
-    backgroundColor: "#1A0002",
-  },
+    activeSwitch: {
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+      backgroundColor: "#1A0002",
+    },
 
-  switchText: {
-    color: "rgba(255,255,255,0.45)",
-    fontSize: moderateScale(12),
-    fontWeight: "500",
-  },
+    switchText: {
+      color: "rgba(255,255,255,0.45)",
+      fontSize: moderateScale(12),
+      fontWeight: "500",
+    },
 
-  activeSwitchText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
+    activeSwitchText: {
+      color: colors.white,
+      fontWeight: "600",
+    },
 
-  card: {
-    width: "100%",
-    borderRadius: moderateScale(18),
-    paddingHorizontal: responsiveWidth(4),
-    paddingVertical: responsiveHeight(2),
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
-  },
+    card: {
+      width: "100%",
+      borderRadius: moderateScale(18),
+      paddingHorizontal: responsiveWidth(4),
+      paddingVertical: responsiveHeight(2),
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.05)",
+    },
 
-  cardGlow: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    height: responsiveHeight(30),
-  },
+    cardGlow: {
+      position: "absolute",
+      bottom: 0,
+      width: "100%",
+      height: responsiveHeight(30),
+    },
 
-  title: {
-    color: "#fff",
-    fontSize: moderateScale(20),
-    fontFamily: "Poppins-Medium",
-  },
+    title: {
+      color: colors.white,
+      fontSize: moderateScale(20),
+      fontFamily: "Poppins-Medium",
+    },
 
-  description: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(11.5),
-    lineHeight: moderateScale(18),
-    marginBottom: responsiveHeight(2),
-    fontFamily: "Poppins-Regular",
-  },
+    description: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(11.5),
+      lineHeight: moderateScale(18),
+      marginBottom: responsiveHeight(2),
+      fontFamily: "Poppins-Regular",
+    },
 
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    marginBottom: responsiveHeight(2),
-  },
+    priceRow: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      marginBottom: responsiveHeight(2),
+    },
 
-  price: {
-    color: "#fff",
-    fontSize: moderateScale(38),
-    fontFamily: "Inter-Medium",
-  },
+    price: {
+      color: colors.white,
+      fontSize: moderateScale(38),
+      fontFamily: "Inter-Medium",
+    },
 
-  monthText: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(15),
-    marginBottom: moderateScale(6),
-    marginLeft: moderateScale(4),
-  },
+    monthText: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(15),
+      marginBottom: moderateScale(6),
+      marginLeft: moderateScale(4),
+    },
 
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    marginBottom: responsiveHeight(2),
-  },
+    divider: {
+      width: "100%",
+      height: 1,
+      backgroundColor: "rgba(255,255,255,0.08)",
+      marginBottom: responsiveHeight(2),
+    },
 
-  whatText: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(13),
-    marginBottom: responsiveHeight(2),
-    fontFamily: "Inter-Medium",
-  },
+    whatText: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(13),
+      marginBottom: responsiveHeight(2),
+      fontFamily: "Inter-Medium",
+    },
 
-  benefitsContainer: {
-    marginBottom: responsiveHeight(1),
-  },
+    benefitsContainer: {
+      marginBottom: responsiveHeight(1),
+    },
 
-  benefitRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: responsiveHeight(1.7),
-  },
+    benefitRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: responsiveHeight(1.7),
+    },
 
-  redDot: {
-    width: moderateScale(16),
-    height: moderateScale(16),
-    borderRadius: moderateScale(20),
-    backgroundColor: "#ff0000",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: responsiveWidth(3),
-  },
+    redDot: {
+      width: moderateScale(16),
+      height: moderateScale(16),
+      borderRadius: moderateScale(20),
+      backgroundColor: "#ff0000",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: responsiveWidth(3),
+    },
 
-  benefitText: {
-    color: "#fff",
-    fontSize: moderateScale(12),
-    flex: 1,
-    fontFamily: "Inter-Medium",
-  },
+    benefitText: {
+      color: colors.white,
+      fontSize: moderateScale(12),
+      flex: 1,
+      fontFamily: "Inter-Medium",
+    },
 
-  subscribeButton: {
-    width: "100%",
-    height: responsiveHeight(5.8),
-    borderRadius: moderateScale(12),
-    overflow: "hidden",
-  },
+    subscribeButton: {
+      width: "100%",
+      height: responsiveHeight(5.8),
+      borderRadius: moderateScale(12),
+      overflow: "hidden",
+    },
 
-  subscribeGradient: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    subscribeGradient: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  subscribeText: {
-    color: "#fff",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
+    subscribeText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
 
-  skipText: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(14),
-    textAlign: "center",
-    marginTop: responsiveHeight(2),
-    fontFamily: "Inter-Medium",
-  },
-});
+    skipText: {
+      color: colors.text,
+      fontSize: moderateScale(14),
+      textAlign: "center",
+      marginTop: responsiveHeight(2),
+      fontFamily: "Inter-Medium",
+    },
+  });

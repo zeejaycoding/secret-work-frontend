@@ -10,6 +10,7 @@ import ProfileScreen from "../Profile/ProfileMainScreen";
 import { moderateScale } from "react-native-size-matters";
 import { BlurView } from "expo-blur";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 import {
   responsiveWidth,
@@ -20,6 +21,8 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabs = () => {
   const { primaryColor } = useBranding();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
 
   const tabIcon = (focused: boolean, active: any, inactive: any) => (
     <View
@@ -41,10 +44,21 @@ const BottomTabs = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: styles.tabBarStyle,
+        tabBarStyle: [
+          styles.tabBarStyle,
+          {
+            backgroundColor: isDarkMode
+              ? "#121516CC"
+              : "rgba(245,245,248,0.9)",
+          },
+        ],
         tabBarItemStyle: styles.tabBarItemStyle,
         tabBarBackground: () => (
-          <BlurView intensity={0} tint="dark" style={StyleSheet.absoluteFill} />
+          <BlurView
+            intensity={0}
+            tint={isDarkMode ? "dark" : "light"}
+            style={StyleSheet.absoluteFill}
+          />
         ),
       }}
     >
@@ -98,7 +112,8 @@ const BottomTabs = () => {
 
 export default BottomTabs;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   tabBarStyle: {
     position: "absolute",
     bottom: responsiveHeight(2),

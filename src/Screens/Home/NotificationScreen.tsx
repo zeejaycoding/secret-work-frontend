@@ -24,10 +24,13 @@ import {
   markAllNotificationsRead,
 } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const NotificationScreen = () => {
   const navigation = useNavigation<any>();
   const { accentColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -118,7 +121,7 @@ const NotificationScreen = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -191,7 +194,7 @@ const NotificationScreen = () => {
             <Ionicons
               name="chevron-back"
               size={moderateScale(20)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -212,10 +215,11 @@ const NotificationScreen = () => {
 
 export default NotificationScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   redHorizontal: {
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -284,7 +288,7 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     minHeight: responsiveHeight(8),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(16),
     paddingHorizontal: responsiveWidth(3),
     paddingVertical: responsiveHeight(1.2),
@@ -304,12 +308,12 @@ const styles = StyleSheet.create({
     width: responsiveWidth(12),
     height: responsiveWidth(12),
     borderRadius: responsiveWidth(6),
-    backgroundColor: "#1F1F1F",
+    backgroundColor: colors.border,
     justifyContent: "center",
     alignItems: "center",
     marginRight: responsiveWidth(3.5),
     borderWidth: 1,
-    borderColor: "#2A2A2A",
+    borderColor: colors.borderStrong,
   },
 
   textContainer: {
@@ -318,14 +322,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
     marginBottom: responsiveHeight(0.4),
   },
 
   subtitle: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(9.1),
     lineHeight: moderateScale(13),
     fontFamily: "Inter-Regular",
@@ -342,7 +346,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },

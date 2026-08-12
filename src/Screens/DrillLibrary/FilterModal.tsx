@@ -17,6 +17,7 @@ import {
   responsiveWidth,
 } from "react-native-responsive-dimensions";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 interface FilterState {
   skill: string;
@@ -58,6 +59,8 @@ const FilterModal: React.FC<Props> = ({
   onApply,
 }) => {
   const { primaryColor } = useBranding();
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const slideAnim = useRef(new Animated.Value(responsiveHeight(100))).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const [selectedSkill, setSelectedSkill] = useState("Dribbling");
@@ -125,7 +128,7 @@ const FilterModal: React.FC<Props> = ({
           <Ionicons
             name="checkmark"
             size={moderateScale(10)}
-            color={active ? "#fff" : "#666"}
+            color={active ? colors.white : colors.textSecondary}
           />
         </View>
 
@@ -192,7 +195,7 @@ const FilterModal: React.FC<Props> = ({
                   <Ionicons
                     name="close"
                     size={moderateScale(20)}
-                    color="#fff"
+                    color={colors.text}
                   />
                 </TouchableOpacity>
               </View>
@@ -283,7 +286,8 @@ const FilterModal: React.FC<Props> = ({
 
 export default FilterModal;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -293,7 +297,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: "100%",
     height: responsiveHeight(70),
-    backgroundColor: "#050505",
+    backgroundColor: colors.background,
     borderTopLeftRadius: moderateScale(24),
     borderTopRightRadius: moderateScale(24),
     paddingHorizontal: responsiveWidth(4),
@@ -308,13 +312,13 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(20),
     fontFamily: "Inter-Medium",
   },
 
   sectionTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     marginTop: responsiveHeight(1),
     marginBottom: responsiveHeight(1.2),
@@ -326,16 +330,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: responsiveHeight(1),
     borderBottomWidth: 1,
-    borderBottomColor: "#111111",
+    borderBottomColor: colors.backgroundElevated,
   },
 
   checkBox: {
     width: moderateScale(16),
     height: moderateScale(16),
     borderRadius: moderateScale(50),
-    backgroundColor: "#1F1F1F",
+    backgroundColor: colors.border,
     borderWidth: 1,
-    borderColor: "#1F1F1F",
+    borderColor: colors.border,
     justifyContent: "center",
     alignItems: "center",
     marginRight: responsiveWidth(3),
@@ -347,13 +351,13 @@ const styles = StyleSheet.create({
   },
 
   radioText: {
-    color: "#8A8F98",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   radioTextActive: {
-    color: "#8A8F98",
+    color: colors.textMuted,
   },
 
   chipWrapper: {
@@ -363,7 +367,7 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: responsiveWidth(3.6),
     paddingVertical: responsiveHeight(1),
     borderRadius: moderateScale(6),
@@ -375,13 +379,13 @@ const styles = StyleSheet.create({
   },
 
   chipText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
 
   activeChipText: {
-    color: "#fff",
+    color: colors.white,
   },
 
   bottomRow: {
@@ -395,7 +399,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     width: "48%",
     height: responsiveHeight(6.5),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     borderRadius: moderateScale(14),
     justifyContent: "center",
     alignItems: "center",
@@ -411,13 +415,13 @@ const styles = StyleSheet.create({
   },
 
   cancelText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },
 
   applyText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },

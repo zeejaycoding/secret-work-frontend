@@ -19,9 +19,12 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { getPodcasts, getPros } from "../../services/api";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const PodcastsScreen = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   const [trendingData, setTrendingData] = useState<any[]>([]);
   const [learnData, setLearnData] = useState<any[]>([]);
@@ -80,7 +83,7 @@ const PodcastsScreen = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -217,7 +220,7 @@ const PodcastsScreen = () => {
                       <Ionicons
                         name="play"
                         size={moderateScale(14)}
-                        color="#fff"
+                        color={colors.white}
                       />
                     </TouchableOpacity>
                   </View>
@@ -256,7 +259,7 @@ const PodcastsScreen = () => {
                       <MaterialCommunityIcons
                         name="clock-time-four"
                         size={moderateScale(12)}
-                        color="#fff"
+                        color={colors.text}
                       />
 
                       <Text style={styles.durationText}>{item.duration}</Text>
@@ -269,7 +272,7 @@ const PodcastsScreen = () => {
                       navigation.navigate("PodcastDetail", { id: item.id })
                     }
                   >
-                    <Ionicons name="play" size={moderateScale(15)} color="#fff" />
+                    <Ionicons name="play" size={moderateScale(15)} color={colors.text} />
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
@@ -283,10 +286,11 @@ const PodcastsScreen = () => {
 
 export default PodcastsScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -331,20 +335,20 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(24),
     fontFamily: "Inter-Medium",
   },
 
   subHeading: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginTop: moderateScale(1),
     fontFamily: "Inter-Regular",
   },
 
   sectionTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(18),
     paddingHorizontal: responsiveWidth(4),
     marginBottom: moderateScale(10),
@@ -352,7 +356,7 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(13),
     paddingHorizontal: responsiveWidth(4),
     marginBottom: moderateScale(10),
@@ -388,7 +392,7 @@ const styles = StyleSheet.create({
   },
 
   trendingTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(15),
     lineHeight: moderateScale(19),
     fontFamily: "Inter-Bold",
@@ -422,12 +426,12 @@ const styles = StyleSheet.create({
     width: moderateScale(24),
     height: moderateScale(24),
     borderRadius: moderateScale(20),
-    backgroundColor: "#d9d9d9",
+    backgroundColor: colors.textSoft,
     marginRight: moderateScale(6),
   },
 
   authorText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(10),
     fontFamily: "Inter-Bold",
   },
@@ -468,13 +472,13 @@ const styles = StyleSheet.create({
   },
 
   learnTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },
 
   learnAuthor: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginTop: moderateScale(2),
     fontFamily: "Inter-Regular",
@@ -487,7 +491,7 @@ const styles = StyleSheet.create({
   },
 
   durationText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginLeft: moderateScale(4),
   },
@@ -496,7 +500,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(40),
-    backgroundColor: "#121212",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },

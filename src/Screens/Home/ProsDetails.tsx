@@ -20,6 +20,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { reportWatchTime, getWorkout } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const categoryLabel = (category: string) => {
   if (category === "Defence") return "Defense";
@@ -46,6 +47,8 @@ const toLessonShape = (drill: any) => ({
 const ProsDetails = ({ route }: any) => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const videoRef = useRef<Video>(null);
   const pro = route?.params?.pro;
 
@@ -159,7 +162,7 @@ const ProsDetails = ({ route }: any) => {
 
           <View style={styles.row}>
             <View style={styles.metaRow}>
-              <Ionicons name="time" size={moderateScale(13)} color="#fff" />
+              <Ionicons name="time" size={moderateScale(13)} color={colors.text} />
 
               <Text style={styles.metaText}>{item.duration}</Text>
             </View>
@@ -168,7 +171,7 @@ const ProsDetails = ({ route }: any) => {
               <MaterialIcons
                 name="sports-gymnastics"
                 size={moderateScale(13)}
-                color="#FFFFFF"
+                color={colors.text}
               />
 
               <Text style={styles.metaText}>{item.reps}</Text>
@@ -180,7 +183,7 @@ const ProsDetails = ({ route }: any) => {
           style={styles.playButton}
           onPress={() => openDrill(item)}
         >
-          <Ionicons name="play" size={moderateScale(16)} color="#FFFFFF" />
+          <Ionicons name="play" size={moderateScale(16)} color={colors.text} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -191,7 +194,7 @@ const ProsDetails = ({ route }: any) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <ScrollView
@@ -210,16 +213,18 @@ const ProsDetails = ({ route }: any) => {
             onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
           />
 
-          <LinearGradient
-            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.95)"]}
-            style={styles.overlay}
-          />
+          {isDarkMode && (
+            <LinearGradient
+              colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.4)", "rgba(0,0,0,0.95)"]}
+              style={styles.overlay}
+            />
+          )}
 
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="close" size={moderateScale(22)} color="#FFFFFF" />
+            <Ionicons name="close" size={moderateScale(22)} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.controlsContainer}>
@@ -227,7 +232,7 @@ const ProsDetails = ({ route }: any) => {
               <Ionicons
                 name="play-back"
                 size={moderateScale(15)}
-                color="#FFFFFF"
+                color={colors.text}
               />
             </TouchableOpacity>
 
@@ -251,23 +256,24 @@ const ProsDetails = ({ route }: any) => {
               <Ionicons
                 name={paused ? "play" : "pause"}
                 size={moderateScale(15)}
-                color="#FFFFFF"
+                color={colors.text}
               />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.detailsWrapper}>
-          <LinearGradient
-            colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.2)", "#000000"]}
-            style={styles.bottomOverlay}
-          />
+          {isDarkMode && (
+            <LinearGradient
+              colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.2)", "#000000"]}
+              style={styles.bottomOverlay}
+            />
+          )}
 
           <View style={styles.detailsContainer}>
             <Text style={styles.mainTitle}>
               {pro?.name || 'MR. 85 LATIN "RED SHOES" DAVIS'}
             </Text>
-
             <Text style={styles.subTitle}>
               {pro?.team || "International Pro-Canadian BSL"}
             </Text>
@@ -317,10 +323,11 @@ const ProsDetails = ({ route }: any) => {
 
 export default ProsDetails;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.background,
   },
 
   scrollContainer: {
@@ -352,7 +359,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 5,
@@ -371,7 +378,7 @@ const styles = StyleSheet.create({
     width: moderateScale(34),
     height: moderateScale(34),
     borderRadius: moderateScale(17),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -384,7 +391,7 @@ const styles = StyleSheet.create({
   progressBg: {
     width: "100%",
     height: moderateScale(6),
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.borderStrong,
     borderRadius: moderateScale(10),
     overflow: "hidden",
   },
@@ -408,20 +415,20 @@ const styles = StyleSheet.create({
   },
 
   detailsContainer: {
-    marginTop: responsiveHeight(-1),
+    marginTop: isDarkMode ? responsiveHeight(-1) : responsiveHeight(1.5),
     paddingHorizontal: responsiveWidth(4),
     zIndex: 2,
   },
 
   mainTitle: {
-    color: "#FFFFFF",
+    color: isDarkMode ? colors.white : "#000000",
     fontSize: moderateScale(18),
     marginBottom: responsiveHeight(0.2),
     fontFamily: "Inter-Medium",
   },
 
   subTitle: {
-    color: "#929292",
+    color: isDarkMode ? "rgba(255,255,255,0.72)" : "#000000",
     fontSize: moderateScale(11),
     marginBottom: responsiveHeight(2),
     fontFamily: "Inter-Regular",
@@ -434,7 +441,7 @@ const styles = StyleSheet.create({
   tabButton: {
     paddingHorizontal: responsiveWidth(2),
     paddingVertical: responsiveHeight(0.9),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(8),
     marginRight: responsiveWidth(1.2),
   },
@@ -444,13 +451,13 @@ const styles = StyleSheet.create({
   },
 
   tabText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   activeTabText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontFamily: "Inter-Medium",
   },
 
@@ -463,7 +470,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: responsiveHeight(1.2),
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.05)",
+    borderBottomColor: colors.divider,
     paddingBottom: responsiveHeight(1),
   },
 
@@ -471,7 +478,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(30),
     height: responsiveHeight(10),
     borderRadius: moderateScale(8),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
   },
 
   lessonContent: {
@@ -480,14 +487,14 @@ const styles = StyleSheet.create({
   },
 
   lessonTitle: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(12),
     marginBottom: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
   },
 
   lessonSubtitle: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     marginBottom: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
@@ -505,7 +512,7 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginLeft: responsiveWidth(1),
     fontFamily: "Inter-Medium",
@@ -515,7 +522,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(21),
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
   },

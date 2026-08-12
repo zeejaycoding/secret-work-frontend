@@ -18,10 +18,14 @@ import { Feather } from "@expo/vector-icons";
 import { Alert, ActivityIndicator } from "react-native";
 import { updateMe } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { ThemeColors, darkColors } from "../../context/ThemeContext";
 
 const OnboardingWorking = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
   const [selectedItem, setSelectedItem] = useState<string>("Shooting accuracy");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,7 +75,7 @@ const OnboardingWorking = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -138,7 +142,7 @@ const OnboardingWorking = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Feather name="arrow-left" size={moderateScale(19)} color="#fff" />
+            <Feather name="arrow-left" size={moderateScale(19)} color={colors.text} />
           </TouchableOpacity>
 
           <Text style={styles.step}>Step 4 of 5</Text>
@@ -203,11 +207,11 @@ const OnboardingWorking = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.white} size="small" />
           ) : (
             <>
               <Text style={styles.buttonText}>Next</Text>
-              <Feather name="arrow-right" size={moderateScale(17)} color="#fff" />
+              <Feather name="arrow-right" size={moderateScale(17)} color={colors.white} />
             </>
           )}
         </TouchableOpacity>
@@ -218,154 +222,155 @@ const OnboardingWorking = () => {
 
 export default OnboardingWorking;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  content: {
-    flex: 1,
-    paddingHorizontal: responsiveWidth(4.5),
-    paddingTop: responsiveHeight(7),
-  },
+    content: {
+      flex: 1,
+      paddingHorizontal: responsiveWidth(4.5),
+      paddingTop: responsiveHeight(7),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(28),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(28),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(35),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(35),
+    },
 
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: responsiveHeight(2),
-  },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: responsiveHeight(2),
+    },
 
-  backButton: {
-    width: responsiveWidth(8),
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
+    backButton: {
+      width: responsiveWidth(8),
+      justifyContent: "center",
+      alignItems: "flex-start",
+    },
 
-  step: {
-    color: "#fff",
-    fontSize: moderateScale(12),
-    fontFamily: "Poppins-Medium",
-  },
+    step: {
+      color: colors.text,
+      fontSize: moderateScale(12),
+      fontFamily: "Poppins-Medium",
+    },
 
-  progressBar: {
-    width: "100%",
-    height: responsiveHeight(0.9),
-    backgroundColor: "#161616",
-    borderRadius: moderateScale(100),
-    overflow: "hidden",
-    marginBottom: responsiveHeight(2.7),
-  },
+    progressBar: {
+      width: "100%",
+      height: responsiveHeight(0.9),
+      backgroundColor: colors.backgroundInput,
+      borderRadius: moderateScale(100),
+      overflow: "hidden",
+      marginBottom: responsiveHeight(2.7),
+    },
 
-  fill: {
-    height: "100%",
-    backgroundColor: "#FF1F2D",
-  },
+    fill: {
+      height: "100%",
+      backgroundColor: "#FF1F2D",
+    },
 
-  title: {
-    color: "#fff",
-    fontSize: moderateScale(17),
-    fontFamily: "Poppins-Medium",
-  },
+    title: {
+      color: colors.text,
+      fontSize: moderateScale(17),
+      fontFamily: "Poppins-Medium",
+    },
 
-  subtitle: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    marginBottom: responsiveHeight(2.5),
-    fontFamily: "Poppins-Regular",
-  },
+    subtitle: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      marginBottom: responsiveHeight(2.5),
+      fontFamily: "Poppins-Regular",
+    },
 
-  gridWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
+    gridWrapper: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+    },
 
-  cardOuter: {
-    width: "48%",
-    marginBottom: responsiveHeight(1.8),
-  },
+    cardOuter: {
+      width: "48%",
+      marginBottom: responsiveHeight(1.8),
+    },
 
-  goalCard: {
-    width: "100%",
-    height: responsiveHeight(15),
-    backgroundColor: "#0A0A0A",
-    borderRadius: moderateScale(12),
-    borderWidth: 1,
-    borderColor: "#0A0A0A",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
+    goalCard: {
+      width: "100%",
+      height: responsiveHeight(15),
+      backgroundColor: colors.backgroundCard,
+      borderRadius: moderateScale(12),
+      borderWidth: 1,
+      borderColor: colors.backgroundCard,
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+    },
 
-  selectedGoalCard: {
-    backgroundColor: "#1A0002",
-    borderColor: "#E50914",
-  },
+    selectedGoalCard: {
+      backgroundColor: "#1A0002",
+      borderColor: "#E50914",
+    },
 
-  cardGlow: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-  },
+    cardGlow: {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+    },
 
-  goalImage: {
-    width: responsiveWidth(7),
-    height: responsiveWidth(7),
-    marginBottom: responsiveHeight(1.2),
-  },
+    goalImage: {
+      width: responsiveWidth(7),
+      height: responsiveWidth(7),
+      marginBottom: responsiveHeight(1.2),
+    },
 
-  goalText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: moderateScale(12),
-    lineHeight: moderateScale(18),
-    fontFamily: "Poppins-Medium",
-  },
+    goalText: {
+      color: colors.text,
+      textAlign: "center",
+      fontSize: moderateScale(12),
+      lineHeight: moderateScale(18),
+      fontFamily: "Poppins-Medium",
+    },
 
-  button: {
-    flexDirection: "row",
-    gap: responsiveWidth(2),
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-    backgroundColor: "#E50914",
-  },
+    button: {
+      flexDirection: "row",
+      gap: responsiveWidth(2),
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+      backgroundColor: "#E50914",
+    },
 
-  buttonText: {
-    color: "#fff",
-    fontSize: moderateScale(15),
-    fontFamily: "Poppins-Medium",
-  },
-});
+    buttonText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Poppins-Medium",
+    },
+  });

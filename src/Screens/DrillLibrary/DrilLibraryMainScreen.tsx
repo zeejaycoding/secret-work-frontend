@@ -21,6 +21,7 @@ import { useNavigation } from "@react-navigation/native";
 import FilterModal from "./FilterModal";
 import { getDrills } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const fallbackDrillsData = [
   {
@@ -102,6 +103,8 @@ const toCardShape = (drill: any) => ({
 
 const DrillCard = ({ item }: any) => {
   const navigation = useNavigation<any>();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
 
   return (
     <TouchableOpacity
@@ -152,6 +155,8 @@ const DrillCard = ({ item }: any) => {
 
 const DrilLibraryMainScreen = ({ route }: any) => {
   const { primaryColor } = useBranding();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const [selectedCategory, setSelectedCategory] = useState(
     route?.params?.category || "All"
   );
@@ -280,11 +285,11 @@ const DrilLibraryMainScreen = ({ route }: any) => {
 
         <View style={styles.searchContainer}>
           <View style={styles.searchBox}>
-            <Ionicons name="search" size={moderateScale(18)} color="#6B6B6B" />
+            <Ionicons name="search" size={moderateScale(18)} color={colors.textSecondary} />
 
             <TextInput
               placeholder="Search"
-              placeholderTextColor="#3A3A3A"
+              placeholderTextColor={colors.switchTrack}
               style={styles.input}
               value={searchText}
               onChangeText={setSearchText}
@@ -297,7 +302,7 @@ const DrilLibraryMainScreen = ({ route }: any) => {
               <FontAwesome6
                 name="sliders"
                 size={moderateScale(18)}
-                color="#fff"
+                color={colors.text}
               />
             </TouchableOpacity>
 
@@ -360,10 +365,11 @@ const DrilLibraryMainScreen = ({ route }: any) => {
 
 export default DrilLibraryMainScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   header: {
@@ -372,7 +378,7 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(23),
     fontFamily: "Inter-Bold",
   },
@@ -382,7 +388,7 @@ const styles = StyleSheet.create({
   },
 
   subHeading: {
-    color: "#929292",
+    color: colors.textMuted,
     marginTop: responsiveHeight(0.5),
     fontSize: moderateScale(12),
     fontFamily: "Inter-Regular",
@@ -395,7 +401,7 @@ const styles = StyleSheet.create({
 
   searchBox: {
     height: responsiveHeight(6.5),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(12),
     flexDirection: "row",
     alignItems: "center",
@@ -404,7 +410,7 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    color: "#fff",
+    color: colors.text,
     marginLeft: responsiveWidth(2),
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
@@ -413,11 +419,11 @@ const styles = StyleSheet.create({
   inlineFilter: {
     width: responsiveWidth(10),
     height: responsiveWidth(10),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     borderRadius: moderateScale(10),
     justifyContent: "center",
     alignItems: "center",
-    borderColor: "#1F1F1F",
+    borderColor: colors.border,
     borderWidth: 1,
   },
 
@@ -428,7 +434,7 @@ const styles = StyleSheet.create({
   },
 
   categoryButton: {
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: responsiveWidth(4),
     paddingVertical: responsiveHeight(1),
     borderRadius: moderateScale(8),
@@ -441,13 +447,13 @@ const styles = StyleSheet.create({
   },
 
   categoryText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   activeCategoryText: {
-    color: "#fff",
+    color: colors.white,
   },
 
   flatListContent: {
@@ -484,14 +490,14 @@ const styles = StyleSheet.create({
   },
 
   timeBadge: {
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     paddingHorizontal: responsiveWidth(2.5),
     paddingVertical: responsiveHeight(0.6),
     borderRadius: moderateScale(20),
   },
 
   timeText: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(8),
     fontFamily: "Inter-Medium",
   },
@@ -504,7 +510,7 @@ const styles = StyleSheet.create({
   },
 
   levelText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(10),
     fontFamily: "Inter-Medium",
   },
@@ -514,14 +520,14 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(12.5),
     lineHeight: moderateScale(20),
     fontFamily: "Inter-Medium",
   },
 
   cardCategory: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Regular",
   },

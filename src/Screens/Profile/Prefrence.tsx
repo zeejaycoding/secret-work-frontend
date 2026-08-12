@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -16,8 +16,9 @@ import {
   responsiveWidth,
 } from "react-native-responsive-dimensions";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { loadPreferences, savePreferences } from "../../services/preferences";
+import { loadPreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 type prefrenceItemProps = {
   title: string;
@@ -61,9 +62,16 @@ const PrefrenceItem = ({
   language,
 }: prefrenceItemProps) => {
   const { accentColor } = useBranding();
-  const translateX = useRef(
-    new Animated.Value(darkModeValue ? moderateScale(13) : 0),
-  ).current;
+  const { colors } = useAppTheme();
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(translateX, {
+      toValue: darkModeValue ? moderateScale(13) : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [darkModeValue, translateX]);
 
   const handleToggle = () => {
     Animated.timing(translateX, {
@@ -74,6 +82,8 @@ const PrefrenceItem = ({
 
     onToggleDarkMode?.(!darkModeValue);
   };
+
+  const styles = createStyles(colors);
 
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.card} onPress={onPress}>
@@ -91,7 +101,7 @@ const PrefrenceItem = ({
           style={[
             styles.customSwitch,
             {
-              backgroundColor: darkModeValue ? accentColor : "#3A3A3A",
+              backgroundColor: darkModeValue ? accentColor : colors.switchTrack,
             },
           ]}
           onPress={handleToggle}
@@ -112,7 +122,7 @@ const PrefrenceItem = ({
           <Ionicons
             name="chevron-forward"
             size={moderateScale(16)}
-            color="#6B6B6B"
+            color={colors.textSecondary}
           />
         </View>
       )}
@@ -122,13 +132,12 @@ const PrefrenceItem = ({
 
 const Prefrence = () => {
   const navigation = useNavigation<any>();
-  const [darkMode, setDarkMode] = useState(true);
+  const { isDarkMode, setDarkMode, colors, statusBarStyle } = useAppTheme();
   const [language, setLanguage] = useState("English");
 
   useFocusEffect(
     useCallback(() => {
       loadPreferences().then((prefs) => {
-        setDarkMode(prefs.darkMode);
         setLanguage(prefs.language);
       });
     }, [])
@@ -136,12 +145,13 @@ const Prefrence = () => {
 
   const handleToggleDarkMode = (value: boolean) => {
     setDarkMode(value);
-    savePreferences({ darkMode: value });
   };
+
+  const styles = createStyles(colors);
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity
@@ -149,7 +159,7 @@ const Prefrence = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>App preference</Text>
@@ -163,7 +173,7 @@ const Prefrence = () => {
             image={item.image}
             language={language}
             isDarkMode={item.isDarkMode}
-            darkModeValue={darkMode}
+            darkModeValue={isDarkMode}
             onToggleDarkMode={handleToggleDarkMode}
             onPress={() =>
               item.screen ? navigation.navigate(item.screen) : null
@@ -177,105 +187,106 @@ const Prefrence = () => {
 
 export default Prefrence;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: responsiveWidth(5),
-    marginTop: responsiveHeight(6),
-  },
+    headerContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: responsiveWidth(5),
+      marginTop: responsiveHeight(6),
+    },
 
-  backButton: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    backButton: {
+      width: moderateScale(40),
+      height: moderateScale(40),
+      borderRadius: moderateScale(100),
+      backgroundColor: colors.backgroundElevated,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  headerTitle: {
-    color: "#fff",
-    fontSize: moderateScale(17),
-    fontFamily: "Inter-Medium",
-    marginLeft: responsiveWidth(3),
-  },
+    headerTitle: {
+      color: colors.text,
+      fontSize: moderateScale(17),
+      fontFamily: "Inter-Medium",
+      marginLeft: responsiveWidth(3),
+    },
 
-  listContainer: {
-    marginTop: responsiveHeight(2),
-    paddingHorizontal: responsiveWidth(4),
-  },
+    listContainer: {
+      marginTop: responsiveHeight(2),
+      paddingHorizontal: responsiveWidth(4),
+    },
 
-  card: {
-    width: "100%",
-    minHeight: responsiveHeight(8.5),
-    backgroundColor: "#0A0A0A",
-    borderRadius: moderateScale(14),
+    card: {
+      width: "100%",
+      minHeight: responsiveHeight(8.5),
+      backgroundColor: colors.backgroundCard,
+      borderRadius: moderateScale(14),
 
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
 
-    paddingHorizontal: responsiveWidth(2),
-    marginBottom: responsiveHeight(0.8),
-  },
+      paddingHorizontal: responsiveWidth(2),
+      marginBottom: responsiveHeight(0.8),
+    },
 
-  leftContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    leftContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  rightContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    rightContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  customSwitch: {
-    width: moderateScale(35),
-    height: moderateScale(22),
-    borderRadius: moderateScale(100),
-    justifyContent: "center",
-    paddingHorizontal: moderateScale(3),
-  },
+    customSwitch: {
+      width: moderateScale(35),
+      height: moderateScale(22),
+      borderRadius: moderateScale(100),
+      justifyContent: "center",
+      paddingHorizontal: moderateScale(3),
+    },
 
-  switchCircle: {
-    width: moderateScale(14),
-    height: moderateScale(14),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#fff",
-  },
+    switchCircle: {
+      width: moderateScale(14),
+      height: moderateScale(14),
+      borderRadius: moderateScale(100),
+      backgroundColor: "#fff",
+    },
 
-  iconContainer: {
-    width: moderateScale(42),
-    height: moderateScale(42),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#161616",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    iconContainer: {
+      width: moderateScale(42),
+      height: moderateScale(42),
+      borderRadius: moderateScale(100),
+      backgroundColor: colors.backgroundInput,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  iconImage: {
-    width: moderateScale(20),
-    height: moderateScale(20),
-    resizeMode: "contain",
-  },
+    iconImage: {
+      width: moderateScale(20),
+      height: moderateScale(20),
+      resizeMode: "contain",
+    },
 
-  title: {
-    color: "#fff",
-    fontSize: moderateScale(13),
-    marginLeft: responsiveWidth(2),
-    fontFamily: "Inter-Medium",
-  },
+    title: {
+      color: colors.text,
+      fontSize: moderateScale(13),
+      marginLeft: responsiveWidth(2),
+      fontFamily: "Inter-Medium",
+    },
 
-  languageText: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    fontFamily: "Inter-Medium",
-    marginRight: responsiveWidth(2),
-  },
-});
+    languageText: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      fontFamily: "Inter-Medium",
+      marginRight: responsiveWidth(2),
+    },
+  });

@@ -19,10 +19,13 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { createCheckoutSession, getSubscriptionStatus } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const BeforeSubscribedPlan = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [loading, setLoading] = useState(false);
 
   const handleSubscribe = async () => {
@@ -64,14 +67,14 @@ const BeforeSubscribedPlan = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>My current plan</Text>
@@ -99,7 +102,7 @@ const BeforeSubscribedPlan = () => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <ActivityIndicator color={colors.white} size="small" />
           ) : (
             <Text style={styles.buttonText}>Subscribe to premium</Text>
           )}
@@ -111,10 +114,11 @@ const BeforeSubscribedPlan = () => {
 
 export default BeforeSubscribedPlan;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   headerContainer: {
@@ -128,13 +132,13 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
   },
 
   statusText: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     marginBottom: responsiveHeight(4),
     fontFamily: "Inter-Medium",
@@ -178,7 +182,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },

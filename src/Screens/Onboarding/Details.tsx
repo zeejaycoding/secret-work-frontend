@@ -19,10 +19,14 @@ import { Feather, Ionicons, Octicons } from "@expo/vector-icons";
 import { Alert, ActivityIndicator } from "react-native";
 import { updateMe, setPassword } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { ThemeColors, darkColors } from "../../context/ThemeContext";
 
 const Details = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
   const currentStep = 1;
   const totalSteps = 5;
   const progressWidth = (currentStep / totalSteps) * 100;
@@ -57,7 +61,7 @@ const Details = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -146,11 +150,11 @@ const Details = () => {
         </Text>
 
         <View style={styles.inputContainer}>
-          <Octicons name="person" size={moderateScale(18)} color="#6B6B6B" />
+          <Octicons name="person" size={moderateScale(18)} color={colors.textSecondary} />
 
           <TextInput
             placeholder="Full name"
-            placeholderTextColor="#6B6B6B"
+            placeholderTextColor={colors.textSecondary}
             style={styles.input}
             value={fullName}
             onChangeText={setFullName}
@@ -158,11 +162,11 @@ const Details = () => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Feather name="lock" size={moderateScale(18)} color="#6B6B6B" />
+          <Feather name="lock" size={moderateScale(18)} color={colors.textSecondary} />
 
           <TextInput
             placeholder="Password (min 6 chars)"
-            placeholderTextColor="#6B6B6B"
+            placeholderTextColor={colors.textSecondary}
             secureTextEntry
             style={styles.input}
             value={password}
@@ -171,18 +175,18 @@ const Details = () => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Feather name="calendar" size={moderateScale(18)} color="#6B6B6B" />
+          <Feather name="calendar" size={moderateScale(18)} color={colors.textSecondary} />
 
           <TextInput
             placeholder="Age"
-            placeholderTextColor="#6B6B6B"
+            placeholderTextColor={colors.textSecondary}
             style={styles.input}
             value={age}
             onChangeText={setAge}
             keyboardType="numeric"
           />
 
-          <Feather name="calendar" size={moderateScale(18)} color="#fff" />
+          <Feather name="calendar" size={moderateScale(18)} color={colors.text} />
         </View>
 
         <View style={styles.dropdownWrapper}>
@@ -194,14 +198,14 @@ const Details = () => {
             <Ionicons
               name="male-female-outline"
               size={moderateScale(18)}
-              color="#6B6B6B"
+              color={colors.textSecondary}
             />
 
             <Text
               style={[
                 styles.genderText,
                 {
-                  color: selectedGender === "Gender" ? "#6B6B6B" : "#FFFFFF",
+                  color: selectedGender === "Gender" ? colors.textSecondary : colors.text,
                 },
               ]}
             >
@@ -211,7 +215,7 @@ const Details = () => {
             <Feather
               name={genderDropdown ? "chevron-up" : "chevron-down"}
               size={moderateScale(18)}
-              color="#3A3A3A"
+              color={colors.switchTrack}
             />
           </TouchableOpacity>
 
@@ -246,7 +250,7 @@ const Details = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.white} size="small" />
           ) : (
             <>
               <Text style={styles.buttonText}>Continue</Text>
@@ -254,7 +258,7 @@ const Details = () => {
                 name="arrow-right"
                 size={moderateScale(17)}
                 style={{ marginTop: responsiveHeight(0.5) }}
-                color="#fff"
+                color={colors.white}
               />
             </>
           )}
@@ -266,162 +270,163 @@ const Details = () => {
 
 export default Details;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "black",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  scrollContent: {
-    paddingTop: responsiveHeight(7),
-    paddingHorizontal: responsiveWidth(4),
-  },
+    scrollContent: {
+      paddingTop: responsiveHeight(7),
+      paddingHorizontal: responsiveWidth(4),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(35),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(35),
+    },
 
-  stepText: {
-    color: "#fff",
-    fontSize: moderateScale(12.5),
-    textAlign: "center",
-    marginBottom: responsiveHeight(2),
-    fontFamily: "Poppins-Medium",
-  },
+    stepText: {
+      color: colors.text,
+      fontSize: moderateScale(12.5),
+      textAlign: "center",
+      marginBottom: responsiveHeight(2),
+      fontFamily: "Poppins-Medium",
+    },
 
-  progressBar: {
-    width: "100%",
-    height: responsiveHeight(1),
-    backgroundColor: "#161616",
-    borderRadius: moderateScale(100),
-    overflow: "hidden",
-    marginBottom: responsiveHeight(2.5),
-  },
+    progressBar: {
+      width: "100%",
+      height: responsiveHeight(1),
+      backgroundColor: colors.backgroundInput,
+      borderRadius: moderateScale(100),
+      overflow: "hidden",
+      marginBottom: responsiveHeight(2.5),
+    },
 
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#FF1F2D",
-  },
+    progressFill: {
+      height: "100%",
+      backgroundColor: "#FF1F2D",
+    },
 
-  heading: {
-    color: "#fff",
-    fontSize: moderateScale(17),
-    fontFamily: "Poppins-Medium",
-  },
+    heading: {
+      color: colors.text,
+      fontSize: moderateScale(17),
+      fontFamily: "Poppins-Medium",
+    },
 
-  subHeading: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    marginBottom: responsiveHeight(2.5),
-    fontFamily: "Poppins-Regular",
-  },
+    subHeading: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      marginBottom: responsiveHeight(2.5),
+      fontFamily: "Poppins-Regular",
+    },
 
-  inputContainer: {
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.8),
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    borderRadius: moderateScale(12),
-    backgroundColor: "#111111",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: responsiveWidth(4),
-    marginBottom: responsiveHeight(1.2),
-    alignSelf: "center",
-    color: "#6B6B6B",
-  },
+    inputContainer: {
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.8),
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: moderateScale(12),
+      backgroundColor: colors.backgroundElevated,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: responsiveWidth(4),
+      marginBottom: responsiveHeight(1.2),
+      alignSelf: "center",
+      color: colors.textSecondary,
+    },
 
-  input: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: moderateScale(12),
-    marginLeft: responsiveWidth(2),
-    fontFamily: "Poppins-Medium",
-    marginTop: responsiveHeight(0.5),
-  },
+    input: {
+      flex: 1,
+      color: colors.text,
+      fontSize: moderateScale(12),
+      marginLeft: responsiveWidth(2),
+      fontFamily: "Poppins-Medium",
+      marginTop: responsiveHeight(0.5),
+    },
 
-  genderText: {
-    flex: 1,
-    marginLeft: responsiveWidth(3),
-    fontSize: moderateScale(14),
-    fontFamily: "Poppins-Medium",
-  },
+    genderText: {
+      flex: 1,
+      marginLeft: responsiveWidth(3),
+      fontSize: moderateScale(14),
+      fontFamily: "Poppins-Medium",
+    },
 
-  dropdownWrapper: {
-    width: responsiveWidth(92),
-    alignSelf: "center",
-    position: "relative",
-    zIndex: 999,
-    marginBottom: responsiveHeight(1.2),
-  },
+    dropdownWrapper: {
+      width: responsiveWidth(92),
+      alignSelf: "center",
+      position: "relative",
+      zIndex: 999,
+      marginBottom: responsiveHeight(1.2),
+    },
 
-  dropdownContainer: {
-    position: "absolute",
-    top: responsiveHeight(7.2),
-    width: "100%",
-    backgroundColor: "#111111",
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    borderRadius: moderateScale(12),
-    overflow: "hidden",
-    zIndex: 9999,
-  },
+    dropdownContainer: {
+      position: "absolute",
+      top: responsiveHeight(7.2),
+      width: "100%",
+      backgroundColor: colors.backgroundElevated,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: moderateScale(12),
+      overflow: "hidden",
+      zIndex: 9999,
+    },
 
-  dropdownItem: {
-    paddingVertical: responsiveHeight(1.8),
-    paddingHorizontal: responsiveWidth(4),
-    borderBottomWidth: 1,
-    borderBottomColor: "#2A2A2A",
-  },
+    dropdownItem: {
+      paddingVertical: responsiveHeight(1.8),
+      paddingHorizontal: responsiveWidth(4),
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderStrong,
+    },
 
-  dropdownText: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(13),
-    fontFamily: "Poppins-Medium",
-  },
+    dropdownText: {
+      color: colors.text,
+      fontSize: moderateScale(13),
+      fontFamily: "Poppins-Medium",
+    },
 
-  button: {
-    flexDirection: "row",
-    gap: responsiveWidth(2),
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-    backgroundColor: "#E50914",
-  },
+    button: {
+      flexDirection: "row",
+      gap: responsiveWidth(2),
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+      backgroundColor: "#E50914",
+    },
 
-  buttonText: {
-    color: "#fff",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
-});
+    buttonText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
+  });

@@ -17,6 +17,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { getWorkouts } from "../../services/api";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const toCardShape = (drill: any) => ({
   id: drill.id,
@@ -36,6 +37,8 @@ const toSectionShape = (section: any) => ({
 
 const WorkoutCard = ({ item, coach }: any) => {
   const navigation = useNavigation<any>();
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -79,6 +82,8 @@ const WorkoutCard = ({ item, coach }: any) => {
 
 const WorkoutScreen = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [workoutData, setWorkoutData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -99,7 +104,7 @@ const WorkoutScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar barStyle={statusBarStyle} backgroundColor={colors.background} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -134,10 +139,11 @@ const WorkoutScreen = () => {
 
 export default WorkoutScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -146,14 +152,14 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(20),
     paddingHorizontal: responsiveWidth(4),
     fontFamily: "Inter-Medium",
   },
 
   subHeading: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     paddingHorizontal: responsiveWidth(4),
     fontFamily: "Inter-Regular",
@@ -165,7 +171,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(15),
     marginBottom: responsiveHeight(1),
     paddingHorizontal: responsiveWidth(4),
@@ -184,7 +190,7 @@ const styles = StyleSheet.create({
     marginRight: responsiveWidth(3),
     borderRadius: moderateScale(10),
     overflow: "hidden",
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
   },
 
   cardImage: {
@@ -218,18 +224,18 @@ const styles = StyleSheet.create({
   },
 
   workoutTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
 
   workoutSubText: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(9),
   },
 
   text: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(22),
     fontFamily: "Inter-Regular",
   },

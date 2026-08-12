@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import LearnCard from "../../Components/Home/Cards/LearnCard";
 import { getPros, getDrills } from "../../services/api";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const getWeekStart = () => {
   const weekStart = new Date();
@@ -53,6 +54,8 @@ const getWeeklyViews = (drill: any, weekStart: Date) => {
 
 const HeroCard = () => {
   const navigation = useNavigation<any>();
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const videoRef = useRef<Video>(null);
   const drillVideoRef = useRef<Video>(null);
   const [showPlayButton, setShowPlayButton] = useState(false);
@@ -204,7 +207,7 @@ const HeroCard = () => {
                 style={styles.playButton}
                 onPress={replayVideo}
               >
-                <Ionicons name="play" size={moderateScale(22)} color="#fff" />
+                <Ionicons name="play" size={moderateScale(22)} color={colors.white} />
               </TouchableOpacity>
             )}
 
@@ -243,15 +246,15 @@ const HeroCard = () => {
 
           {showDrillPlayButton && (
             <View style={styles.playButton}>
-              <Ionicons name="play" size={moderateScale(22)} color="#fff" />
+              <Ionicons name="play" size={moderateScale(22)} color={colors.white} />
             </View>
           )}
         </TouchableOpacity>
 
         <View style={styles.drillTextBlock}>
-          <Text style={styles.title}>Drill of the week</Text>
+          <Text style={styles.drillTitle}>Drill of the week</Text>
 
-          <Text style={styles.subtitle}>{drillOfWeek.coach}</Text>
+          <Text style={styles.drillSubtitle}>{drillOfWeek.coach}</Text>
         </View>
       </View>
 
@@ -262,7 +265,8 @@ const HeroCard = () => {
 
 export default HeroCard;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   mainContainer: {
     flex: 1,
     paddingTop: responsiveHeight(2),
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
     height: responsiveHeight(24),
     borderRadius: moderateScale(12),
     overflow: "hidden",
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
     justifyContent: "center",
@@ -298,7 +302,7 @@ const styles = StyleSheet.create({
 
   shadowOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    backgroundColor: isDarkMode ? "rgba(0, 0, 0, 0.45)" : "rgba(0, 0, 0, 0)",
     zIndex: 5,
   },
 
@@ -310,7 +314,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2A2A2A",
+    borderColor: colors.borderStrong,
     zIndex: 20,
   },
 
@@ -328,13 +332,25 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Bold",
   },
 
   subtitle: {
-    color: "#929292",
+    color: colors.textMuted,
+    fontSize: moderateScale(12),
+    fontFamily: "Inter-Medium",
+  },
+
+  drillTitle: {
+    color: colors.text,
+    fontSize: moderateScale(17),
+    fontFamily: "Inter-Bold",
+  },
+
+  drillSubtitle: {
+    color: isDarkMode ? colors.textMuted : "#000000",
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },

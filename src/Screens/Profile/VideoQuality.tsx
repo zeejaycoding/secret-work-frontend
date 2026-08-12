@@ -16,12 +16,15 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { loadPreferences, savePreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const videoPlayData = ["Auto Play", "1080p", "720p"];
 
 const VideoQuality = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
   const [selectedOption, setSelectedOption] = useState("Auto Play");
 
   useFocusEffect(
@@ -39,7 +42,7 @@ const VideoQuality = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity
@@ -47,7 +50,7 @@ const VideoQuality = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={moderateScale(22)} color="#fff" />
+          <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Video Play Settings</Text>
@@ -74,7 +77,7 @@ const VideoQuality = () => {
               <Ionicons
                 name="checkmark-circle-sharp"
                 size={moderateScale(18)}
-                color={isSelected ? primaryColor : "#3c3b3b"}
+                color={isSelected ? primaryColor : colors.switchTrack}
               />
             </TouchableOpacity>
           );
@@ -86,10 +89,11 @@ const VideoQuality = () => {
 
 export default VideoQuality;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   headerContainer: {
@@ -103,13 +107,13 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -126,11 +130,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: responsiveHeight(1.5),
     borderBottomWidth: 1,
-    borderBottomColor: "#111111",
+    borderBottomColor: colors.backgroundElevated,
   },
 
   languageText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },

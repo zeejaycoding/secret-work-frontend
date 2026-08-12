@@ -22,10 +22,13 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { changePassword } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const SettingsChangePassword = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
@@ -77,7 +80,7 @@ const SettingsChangePassword = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <KeyboardAvoidingView
@@ -99,7 +102,7 @@ const SettingsChangePassword = () => {
                 <Ionicons
                   name="chevron-back"
                   size={moderateScale(22)}
-                  color="#fff"
+                  color={colors.text}
                 />
               </TouchableOpacity>
             </View>
@@ -117,12 +120,12 @@ const SettingsChangePassword = () => {
                 <MaterialCommunityIcons
                   name="lock-outline"
                   size={moderateScale(16)}
-                  color="#6B6B6B"
+                  color={colors.textSecondary}
                 />
 
                 <TextInput
                   placeholder="Old password"
-                  placeholderTextColor="#6B6B6B"
+                  placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showOldPassword}
                   value={oldPassword}
@@ -136,7 +139,7 @@ const SettingsChangePassword = () => {
                   <Ionicons
                     name={showOldPassword ? "eye-outline" : "eye-off-outline"}
                     size={moderateScale(16)}
-                    color="#6B6B6B"
+                    color={colors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
@@ -145,12 +148,12 @@ const SettingsChangePassword = () => {
                 <MaterialCommunityIcons
                   name="lock-outline"
                   size={moderateScale(16)}
-                  color="#6B6B6B"
+                  color={colors.textSecondary}
                 />
 
                 <TextInput
                   placeholder="New password"
-                  placeholderTextColor="#6B6B6B"
+                  placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showPassword}
                   value={password}
@@ -164,7 +167,7 @@ const SettingsChangePassword = () => {
                   <Ionicons
                     name={showPassword ? "eye-outline" : "eye-off-outline"}
                     size={moderateScale(16)}
-                    color="#6B6B6B"
+                    color={colors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
@@ -173,12 +176,12 @@ const SettingsChangePassword = () => {
                 <MaterialCommunityIcons
                   name="lock-outline"
                   size={moderateScale(16)}
-                  color="#6B6B6B"
+                  color={colors.textSecondary}
                 />
 
                 <TextInput
                   placeholder="Confirm password"
-                  placeholderTextColor="#6B6B6B"
+                  placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
@@ -194,7 +197,7 @@ const SettingsChangePassword = () => {
                       showConfirmPassword ? "eye-outline" : "eye-off-outline"
                     }
                     size={moderateScale(16)}
-                    color="#6B6B6B"
+                    color={colors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
@@ -232,7 +235,7 @@ const SettingsChangePassword = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
+                  <ActivityIndicator color={colors.white} size="small" />
                 ) : (
                   <Text style={styles.confirmText}>Confirm</Text>
                 )}
@@ -247,10 +250,11 @@ const SettingsChangePassword = () => {
 
 export default SettingsChangePassword;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContainer: {
@@ -274,7 +278,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(19),
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -285,14 +289,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(18),
     fontFamily: "Poppins-Medium",
   },
 
   description: {
     width: responsiveWidth(90),
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(11),
     lineHeight: moderateScale(18),
     fontFamily: "Poppins-Regular",
@@ -306,9 +310,9 @@ const styles = StyleSheet.create({
     width: responsiveWidth(92),
     height: responsiveHeight(6.8),
     borderWidth: 1,
-    borderColor: "#2A2A2A",
+    borderColor: colors.borderStrong,
     borderRadius: moderateScale(14),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: responsiveWidth(4),
@@ -318,7 +322,7 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(12),
     marginLeft: responsiveWidth(1),
     fontFamily: "Poppins-Medium",
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
   },
 
   hintsTitle: {
-    color: "#FFFFFF",
+    color: colors.text,
     fontSize: moderateScale(13),
     fontFamily: "Poppins-Medium",
     marginBottom: responsiveHeight(1),
@@ -345,7 +349,7 @@ const styles = StyleSheet.create({
   },
 
   hintText: {
-    color: "#AEB3B7",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     marginLeft: responsiveWidth(2),
     fontFamily: "Inter-Medium",
@@ -363,7 +367,7 @@ const styles = StyleSheet.create({
   },
 
   confirmText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },

@@ -20,11 +20,14 @@ import { useNavigation } from "@react-navigation/native";
 import { getSubscriptionStatus, createPortalSession } from "../../services/api";
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const AfterSubscribed = () => {
   const navigation = useNavigation<any>();
   const { refreshDbUser } = useAuthContext();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<{
     tier: string;
@@ -97,7 +100,7 @@ const AfterSubscribed = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator color="#E50914" size="large" />
         </View>
@@ -107,7 +110,7 @@ const AfterSubscribed = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -117,7 +120,7 @@ const AfterSubscribed = () => {
           <Ionicons
             name="chevron-back"
             size={moderateScale(22)}
-            color="#fff"
+            color={colors.text}
           />
         </TouchableOpacity>
 
@@ -162,10 +165,11 @@ const AfterSubscribed = () => {
 
 export default AfterSubscribed;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
     paddingHorizontal: responsiveWidth(4),
   },
 
@@ -185,13 +189,13 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: moderateScale(50),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
     marginLeft: responsiveWidth(3),
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(26),
     height: responsiveWidth(26),
     borderRadius: responsiveWidth(14),
-    backgroundColor: "#111111",
+    backgroundColor: isDarkMode ? colors.backgroundElevated : "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -223,7 +227,7 @@ const styles = StyleSheet.create({
   },
 
   statusLabel: {
-    color: "#929292",
+    color: colors.textMuted,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Medium",
   },
@@ -235,14 +239,14 @@ const styles = StyleSheet.create({
   },
 
   priceText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(28),
     marginTop: responsiveHeight(0.7),
     fontFamily: "Inter-Bold",
   },
 
   subscriptionBadge: {
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: responsiveWidth(5),
     paddingVertical: responsiveHeight(0.8),
     borderRadius: moderateScale(30),
@@ -250,14 +254,14 @@ const styles = StyleSheet.create({
   },
 
   subscriptionText: {
-    color: "#8A9095",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
 
   manageButton: {
     marginTop: responsiveHeight(3),
-    backgroundColor: "#1A0002",
+    backgroundColor: isDarkMode ? "#1A0002" : "rgba(229,9,20,0.10)",
     paddingHorizontal: responsiveWidth(8),
     paddingVertical: responsiveHeight(1.2),
     borderRadius: moderateScale(12),

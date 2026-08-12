@@ -22,10 +22,14 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import api from "../services/api";
+import { useAppTheme, ThemeColors, overlayGradient } from "../context/ThemeContext";
 
 const OTPVerification = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
+  const overlays = overlayGradient(isDarkMode);
   const email = route?.params?.email;
 
   const [otp, setOtp] = useState(["", "", "", "", ""]);
@@ -115,7 +119,7 @@ const OTPVerification = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <ImageBackground
@@ -153,31 +157,16 @@ const OTPVerification = () => {
         />
 
         <LinearGradient
-          colors={[
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.05)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.55)",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
+          colors={overlays.side.colors}
+          locations={overlays.side.locations}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={styles.sideOverlay}
         />
 
         <LinearGradient
-          colors={[
-            "transparent",
-            "rgba(0,0,0,0.02)",
-            "rgba(0,0,0,0.06)",
-            "rgba(0,0,0,0.10)",
-            "rgba(0,0,0,0.18)",
-            "rgba(0,0,0,0.22)",
-            "rgba(0,0,0,0.25)",
-            "rgba(0,0,0,0.95)",
-          ]}
-          locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
+          colors={overlays.bottom.colors}
+          locations={overlays.bottom.locations}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={styles.bottomOverlay}
@@ -231,9 +220,9 @@ const OTPVerification = () => {
                     maxLength={1}
                     style={styles.otpInput}
                     placeholder="-"
-                    placeholderTextColor="#8D8D8D"
+                    placeholderTextColor={colors.textMuted}
                     textAlign="center"
-                    selectionColor="#fff"
+                    selectionColor={colors.text}
                   />
                 </LinearGradient>
               ))}
@@ -283,138 +272,139 @@ const OTPVerification = () => {
 
 export default OTPVerification;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  backgroundImage: {
-    flex: 1,
-    width: responsiveWidth(100),
-    height: responsiveHeight(40),
-  },
+    backgroundImage: {
+      flex: 1,
+      width: responsiveWidth(100),
+      height: responsiveHeight(40),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(50),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(50),
+    },
 
-  scrollContainer: {
-    flexGrow: 1,
-    alignItems: "center",
-    paddingTop: responsiveHeight(10),
-    paddingHorizontal: responsiveWidth(5),
-  },
+    scrollContainer: {
+      flexGrow: 1,
+      alignItems: "center",
+      paddingTop: responsiveHeight(10),
+      paddingHorizontal: responsiveWidth(5),
+    },
 
-  logo: {
-    width: responsiveWidth(25),
-    height: responsiveHeight(6),
-    marginBottom: responsiveHeight(4.5),
-  },
+    logo: {
+      width: responsiveWidth(25),
+      height: responsiveHeight(6),
+      marginBottom: responsiveHeight(4.5),
+    },
 
-  heading: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(25),
-    fontFamily: "Poppins-Medium",
-  },
+    heading: {
+      color: colors.white,
+      fontSize: moderateScale(25),
+      fontFamily: "Poppins-Medium",
+    },
 
-  subHeading: {
-    width: responsiveWidth(80),
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    textAlign: "center",
-    lineHeight: moderateScale(18),
-    fontFamily: "Poppins-Regular",
-    marginBottom: responsiveHeight(3),
-  },
+    subHeading: {
+      width: responsiveWidth(80),
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      textAlign: "center",
+      lineHeight: moderateScale(18),
+      fontFamily: "Poppins-Regular",
+      marginBottom: responsiveHeight(3),
+    },
 
-  otpContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: responsiveWidth(92),
-    marginBottom: responsiveHeight(2.2),
-  },
+    otpContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: responsiveWidth(92),
+      marginBottom: responsiveHeight(2.2),
+    },
 
-  inputGradient: {
-    width: responsiveWidth(16.6),
-    height: responsiveWidth(14),
-    borderRadius: moderateScale(12),
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
+    inputGradient: {
+      width: responsiveWidth(16.6),
+      height: responsiveWidth(14),
+      borderRadius: moderateScale(12),
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+    },
 
-  activeInput: {
-    borderColor: "#FFFFFF",
-  },
+    activeInput: {
+      borderColor: colors.text,
+    },
 
-  otpInput: {
-    width: "100%",
-    height: "100%",
-    color: "#fff",
-    fontSize: moderateScale(24),
-    fontWeight: "600",
-    textAlign: "center",
-  },
+    otpInput: {
+      width: "100%",
+      height: "100%",
+      color: colors.text,
+      fontSize: moderateScale(24),
+      fontWeight: "600",
+      textAlign: "center",
+    },
 
-  verifyButton: {
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-  },
+    verifyButton: {
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+    },
 
-  verifyButtonText: {
-    color: "#fff",
-    fontSize: moderateScale(16),
-    fontFamily: "Inter-Medium",
-  },
+    verifyButtonText: {
+      color: colors.white,
+      fontSize: moderateScale(16),
+      fontFamily: "Inter-Medium",
+    },
 
-  resendContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    resendContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  didntText: {
-    color: "#7C7C7C",
-    fontSize: moderateScale(14),
-    fontFamily: "Inter-Medium",
-  },
+    didntText: {
+      color: colors.textFaint,
+      fontSize: moderateScale(14),
+      fontFamily: "Inter-Medium",
+    },
 
-  resendText: {
-    color: "#fff",
-    fontSize: moderateScale(14),
-    fontFamily: "Inter-Medium",
-  },
-});
+    resendText: {
+      color: colors.white,
+      fontSize: moderateScale(14),
+      fontFamily: "Inter-Medium",
+    },
+  });

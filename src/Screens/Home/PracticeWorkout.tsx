@@ -28,6 +28,7 @@ import {
   reportWatchTime,
 } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 interface WorkoutItem {
   id: string;
@@ -89,6 +90,8 @@ const PracticeWorkout = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
   const videoRef = useRef<Video | null>(null);
   const [currentVideo, setCurrentVideo] = useState(0);
   const [resumePosition, setResumePosition] = useState(0);
@@ -250,7 +253,7 @@ const PracticeWorkout = () => {
                 style={styles.svgStyle}
               >
                 <Circle
-                  stroke="#2A2A2A"
+                  stroke={colors.borderStrong}
                   fill="none"
                   cx={CIRCLE_SIZE / 2}
                   cy={CIRCLE_SIZE / 2}
@@ -274,7 +277,7 @@ const PracticeWorkout = () => {
               </Svg>
 
               <View style={styles.activeCircle}>
-                <Ionicons name="play" size={moderateScale(18)} color="#fff" />
+                <Ionicons name="play" size={moderateScale(18)} color={colors.text} />
               </View>
             </View>
           ) : (
@@ -291,7 +294,7 @@ const PracticeWorkout = () => {
 
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
-              <Ionicons name="time" size={moderateScale(12)} color="#fff" />
+              <Ionicons name="time" size={moderateScale(12)} color={colors.text} />
 
               <Text style={styles.metaText}>{item.duration} secs</Text>
             </View>
@@ -300,7 +303,7 @@ const PracticeWorkout = () => {
               <MaterialIcons
                 name="directions-run"
                 size={moderateScale(14)}
-                color="#fff"
+                color={colors.text}
               />
 
               <Text style={styles.metaText}>{item.reps}</Text>
@@ -316,7 +319,7 @@ const PracticeWorkout = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <View style={styles.videoContainer}>
@@ -354,24 +357,28 @@ const PracticeWorkout = () => {
           style={styles.closeButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="close" size={moderateScale(20)} color="#fff" />
+          <Ionicons
+            name="close"
+            size={moderateScale(20)}
+            color={isDarkMode ? colors.white : colors.text}
+          />
         </TouchableOpacity>
 
         <View style={styles.controlsContainer}>
-          <TouchableOpacity
-            style={[
-              styles.controlBtn,
-              currentVideo === 0 && styles.controlBtnDisabled,
-            ]}
-            disabled={currentVideo === 0}
-            onPress={goToPrevious}
-          >
-            <Ionicons
-              name="play-skip-back"
-              size={moderateScale(14)}
-              color="#fff"
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.controlBtn,
+                currentVideo === 0 && styles.controlBtnDisabled,
+              ]}
+              disabled={currentVideo === 0}
+              onPress={goToPrevious}
+            >
+              <Ionicons
+                name="play-skip-back"
+                size={moderateScale(14)}
+                color={isDarkMode ? colors.white : colors.text}
+              />
+            </TouchableOpacity>
 
           <View style={styles.progressBar}>
             <Animated.View
@@ -387,20 +394,20 @@ const PracticeWorkout = () => {
             />
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.controlBtn,
-              currentVideo === workouts.length - 1 && styles.controlBtnDisabled,
-            ]}
-            disabled={currentVideo === workouts.length - 1}
-            onPress={goToNext}
-          >
-            <Ionicons
-              name="play-skip-forward"
-              size={moderateScale(14)}
-              color="#fff"
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.controlBtn,
+                currentVideo === workouts.length - 1 && styles.controlBtnDisabled,
+              ]}
+              disabled={currentVideo === workouts.length - 1}
+              onPress={goToNext}
+            >
+              <Ionicons
+                name="play-skip-forward"
+                size={moderateScale(14)}
+                color={isDarkMode ? colors.white : colors.text}
+              />
+            </TouchableOpacity>
         </View>
       </View>
 
@@ -441,16 +448,17 @@ const PracticeWorkout = () => {
 
 export default PracticeWorkout;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   videoContainer: {
     width: "100%",
     height: responsiveHeight(36),
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
     overflow: "hidden",
   },
 
@@ -481,7 +489,7 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: moderateScale(100),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 5,
@@ -501,7 +509,7 @@ const styles = StyleSheet.create({
     width: moderateScale(28),
     height: moderateScale(28),
     borderRadius: moderateScale(20),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -513,7 +521,7 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: moderateScale(6.2),
-    backgroundColor: "#2A2A2A",
+    backgroundColor: colors.borderStrong,
     borderRadius: moderateScale(20),
     marginHorizontal: responsiveWidth(3),
     overflow: "hidden",
@@ -526,7 +534,7 @@ const styles = StyleSheet.create({
 
   listWrapper: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
     paddingTop: responsiveHeight(1.5),
   },
 
@@ -535,7 +543,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: responsiveHeight(1.2),
     marginHorizontal: responsiveWidth(4),
-    borderBottomColor: "#111111",
+    borderBottomColor: colors.backgroundElevated,
     borderBottomWidth: 1,
   },
 
@@ -559,7 +567,7 @@ const styles = StyleSheet.create({
     width: moderateScale(42),
     height: moderateScale(42),
     borderRadius: moderateScale(42),
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
@@ -569,15 +577,15 @@ const styles = StyleSheet.create({
     width: moderateScale(52),
     height: moderateScale(52),
     borderRadius: moderateScale(50),
-    backgroundColor: "#151515",
+    backgroundColor: colors.backgroundElevated,
     borderWidth: 4.5,
-    borderColor: "#1F1F1F",
+    borderColor: colors.border,
     justifyContent: "center",
     alignItems: "center",
   },
 
   timeText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
@@ -587,13 +595,13 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },
 
   category: {
-    color: "#B5B5B5",
+    color: colors.textMuted,
     fontSize: moderateScale(11),
     marginTop: responsiveHeight(0.3),
     fontFamily: "Inter-Regular",
@@ -612,7 +620,7 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(11),
     marginLeft: responsiveWidth(1),
   },
@@ -627,7 +635,7 @@ const styles = StyleSheet.create({
   bottomButton: {
     width: "100%",
     height: responsiveHeight(6.5),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     borderRadius: moderateScale(12),
     overflow: "hidden",
     justifyContent: "center",
@@ -643,7 +651,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(15),
     fontWeight: "700",
     zIndex: 10,

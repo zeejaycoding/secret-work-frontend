@@ -24,11 +24,14 @@ import { useAuthContext } from "../../context/AuthContext";
 import { updateMe } from "../../services/api";
 import api from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const EditProfileInformation = () => {
   const navigation = useNavigation<any>();
   const { user, signOut } = useAuthContext();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   const [name, setName] = useState(user?.firstName || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -86,7 +89,7 @@ const EditProfileInformation = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar backgroundColor={colors.background} barStyle={statusBarStyle} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -100,7 +103,7 @@ const EditProfileInformation = () => {
             <Ionicons
               name="chevron-back"
               size={moderateScale(22)}
-              color="#fff"
+              color={colors.text}
             />
           </TouchableOpacity>
 
@@ -109,13 +112,13 @@ const EditProfileInformation = () => {
 
         <View style={styles.formContainer}>
           <View style={styles.inputContainer}>
-            <Feather name="user" size={moderateScale(18)} color="#7B7B7B" />
+            <Feather name="user" size={moderateScale(18)} color={colors.textFaint} />
 
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="Enter name"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textFaint}
               style={styles.input}
             />
           </View>
@@ -124,17 +127,17 @@ const EditProfileInformation = () => {
             <MaterialCommunityIcons
               name="email-outline"
               size={moderateScale(18)}
-              color="#7B7B7B"
+              color={colors.textFaint}
             />
 
             <TextInput
               value={email}
               onChangeText={setEmail}
               placeholder="Enter email"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textFaint}
               keyboardType="email-address"
               editable={false}
-              style={[styles.input, { color: "#555" }]}
+              style={[styles.input, { color: colors.textSecondary }]}
             />
           </View>
 
@@ -142,14 +145,14 @@ const EditProfileInformation = () => {
             <MaterialCommunityIcons
               name="cake-variant-outline"
               size={moderateScale(18)}
-              color="#7B7B7B"
+              color={colors.textFaint}
             />
 
             <TextInput
               value={age}
               onChangeText={setAge}
               placeholder="Age"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textFaint}
               keyboardType="numeric"
               style={styles.input}
             />
@@ -159,14 +162,14 @@ const EditProfileInformation = () => {
             <Ionicons
               name="male-outline"
               size={moderateScale(18)}
-              color="#7B7B7B"
+              color={colors.textFaint}
             />
 
             <TextInput
               value={gender}
               onChangeText={setGender}
               placeholder="Gender"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textFaint}
               style={styles.input}
             />
           </View>
@@ -175,14 +178,14 @@ const EditProfileInformation = () => {
             <MaterialCommunityIcons
               name="human-male-height"
               size={moderateScale(18)}
-              color="#7B7B7B"
+              color={colors.textFaint}
             />
 
             <TextInput
               value={height}
               onChangeText={setHeight}
               placeholder="Height (cm)"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textFaint}
               keyboardType="numeric"
               style={styles.input}
             />
@@ -196,7 +199,7 @@ const EditProfileInformation = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={colors.text} size="small" />
             ) : (
               <Text style={styles.editButtonText}>Edit details</Text>
             )}
@@ -208,7 +211,7 @@ const EditProfileInformation = () => {
             disabled={isDeleting}
           >
             {isDeleting ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={colors.white} size="small" />
             ) : (
               <Text style={styles.deleteButtonText}>Delete account</Text>
             )}
@@ -221,10 +224,11 @@ const EditProfileInformation = () => {
 
 export default EditProfileInformation;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContainer: {
@@ -244,14 +248,14 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: moderateScale(50),
-    backgroundColor: "#111111",
+    backgroundColor: colors.backgroundElevated,
     justifyContent: "center",
     alignItems: "center",
     marginRight: responsiveWidth(3),
   },
 
   headerTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(17),
     fontFamily: "Inter-Medium",
   },
@@ -264,9 +268,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: responsiveHeight(7),
     borderWidth: 1,
-    borderColor: "#2A2A2A",
+    borderColor: colors.borderStrong,
     borderRadius: moderateScale(12),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: responsiveWidth(3.3),
@@ -274,7 +278,7 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    color: "#fff",
+    color: colors.text,
     marginLeft: responsiveWidth(2),
     fontSize: moderateScale(13),
     fontFamily: "Inter-Medium",
@@ -290,7 +294,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(44),
     height: responsiveHeight(6.5),
     borderRadius: moderateScale(12),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -305,13 +309,13 @@ const styles = StyleSheet.create({
   },
 
   editButtonText: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },
 
   deleteButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },

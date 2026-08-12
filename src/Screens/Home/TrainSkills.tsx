@@ -15,6 +15,7 @@ import {
 import { moderateScale } from "react-native-size-matters";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { getDrills } from "../../services/api";
 
 interface SkillItemProps {
@@ -54,6 +55,8 @@ const categoryLabel = (category: string) => {
 const TrainSkills = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [skillsData, setSkillsData] = useState<SkillItemProps[]>(
     fallbackSkillsData
   );
@@ -171,7 +174,8 @@ const TrainSkills = () => {
 
 export default TrainSkills;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     marginTop: responsiveHeight(3),
     paddingHorizontal: responsiveWidth(4),
@@ -186,7 +190,7 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
   },
@@ -210,7 +214,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: responsiveHeight(1.8),
     position: "relative",
-    backgroundColor: "#1E1E1E",
+    backgroundColor: colors.backgroundElevated,
   },
 
   image: {
@@ -243,7 +247,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: responsiveHeight(1),
     left: responsiveWidth(3),
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(14),
     fontFamily: "Inter-Medium",
   },

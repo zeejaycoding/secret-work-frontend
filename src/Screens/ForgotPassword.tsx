@@ -22,9 +22,13 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import api from "../services/api";
+import { useAppTheme, ThemeColors, overlayGradient } from "../context/ThemeContext";
 
 const ForgotPassword = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
+  const overlays = overlayGradient(isDarkMode);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,7 +59,7 @@ const ForgotPassword = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <ImageBackground
@@ -93,31 +97,16 @@ const ForgotPassword = () => {
         />
 
         <LinearGradient
-          colors={[
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.05)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.55)",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
+          colors={overlays.side.colors}
+          locations={overlays.side.locations}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={styles.sideOverlay}
         />
 
         <LinearGradient
-          colors={[
-            "transparent",
-            "rgba(0,0,0,0.02)",
-            "rgba(0,0,0,0.06)",
-            "rgba(0,0,0,0.10)",
-            "rgba(0,0,0,0.18)",
-            "rgba(0,0,0,0.22)",
-            "rgba(0,0,0,0.25)",
-            "rgba(0,0,0,0.95)",
-          ]}
-          locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
+          colors={overlays.bottom.colors}
+          locations={overlays.bottom.locations}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={styles.bottomOverlay}
@@ -153,15 +142,15 @@ const ForgotPassword = () => {
                   <Feather
                     name="mail"
                     size={moderateScale(16)}
-                    color="#6B6B6B"
+                    color={colors.textSecondary}
                   />
 
                   <TextInput
-                    placeholder="Enter your email address"
-                    placeholderTextColor="rgba(255,255,255,0.45)"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
+                     placeholder="Enter your email address"
+                     placeholderTextColor={colors.textMuted}
+                     style={styles.input}
+                     value={email}
+                     onChangeText={setEmail}
                   />
                 </View>
 
@@ -184,140 +173,141 @@ const ForgotPassword = () => {
 
 export default ForgotPassword;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  backgroundImage: {
-    flex: 1,
-    width: responsiveWidth(100),
-    height: responsiveHeight(40),
-  },
+    backgroundImage: {
+      flex: 1,
+      width: responsiveWidth(100),
+      height: responsiveHeight(40),
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(50),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(50),
+    },
 
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: responsiveHeight(4),
-  },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingBottom: responsiveHeight(4),
+    },
 
-  contentContainer: {
-    flex: 1,
-    paddingTop: responsiveHeight(10),
-    paddingHorizontal: responsiveWidth(4),
-  },
+    contentContainer: {
+      flex: 1,
+      paddingTop: responsiveHeight(10),
+      paddingHorizontal: responsiveWidth(4),
+    },
 
-  topSection: {
-    alignItems: "center",
-  },
+    topSection: {
+      alignItems: "center",
+    },
 
-  logo: {
-    width: responsiveWidth(25),
-    height: responsiveHeight(6),
-    marginBottom: responsiveHeight(5),
-  },
+    logo: {
+      width: responsiveWidth(25),
+      height: responsiveHeight(6),
+      marginBottom: responsiveHeight(5),
+    },
 
-  title: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(25),
-    fontFamily: "Poppins-Medium",
-  },
+    title: {
+      color: colors.white,
+      fontSize: moderateScale(25),
+      fontFamily: "Poppins-Medium",
+    },
 
-  description: {
-    width: responsiveWidth(62),
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    textAlign: "center",
-    lineHeight: moderateScale(18),
-    fontFamily: "Poppins-Regular",
-  },
+    description: {
+      width: responsiveWidth(62),
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      textAlign: "center",
+      lineHeight: moderateScale(18),
+      fontFamily: "Poppins-Regular",
+    },
 
-  formContainer: {
-    marginTop: responsiveHeight(3),
-  },
+    formContainer: {
+      marginTop: responsiveHeight(3),
+    },
 
-  inputContainer: {
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.8),
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    borderRadius: moderateScale(12),
-    backgroundColor: "#0A0A0A",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: responsiveWidth(4),
-    marginBottom: responsiveHeight(2.2),
-    alignSelf: "center",
-    color: "#6B6B6B",
-  },
+    inputContainer: {
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.8),
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      borderRadius: moderateScale(12),
+      backgroundColor: colors.backgroundCard,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: responsiveWidth(4),
+      marginBottom: responsiveHeight(2.2),
+      alignSelf: "center",
+      color: colors.textSecondary,
+    },
 
-  input: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: moderateScale(12),
-    marginLeft: responsiveWidth(2),
-    fontFamily: "Poppins-Medium",
-    marginTop: responsiveHeight(0.5),
-  },
+    input: {
+      flex: 1,
+      color: colors.text,
+      fontSize: moderateScale(12),
+      marginLeft: responsiveWidth(2),
+      fontFamily: "Poppins-Medium",
+      marginTop: responsiveHeight(0.5),
+    },
 
-  signInButton: {
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    backgroundColor: "#E50914",
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-    marginBottom: responsiveHeight(2.5),
-  },
+    signInButton: {
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      backgroundColor: "#E50914",
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      alignSelf: "center",
+      marginBottom: responsiveHeight(2.5),
+    },
 
-  signInText: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(15),
-    fontFamily: "Inter-Medium",
-  },
+    signInText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
 
-  orContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: responsiveHeight(2),
-  },
+    orContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: responsiveHeight(2),
+    },
 
-  line: {
-    width: responsiveWidth(34),
-    height: 1,
-    backgroundColor: "#1F1F1F",
-  },
-});
+    line: {
+      width: responsiveWidth(34),
+      height: 1,
+      backgroundColor: colors.border,
+    },
+  });

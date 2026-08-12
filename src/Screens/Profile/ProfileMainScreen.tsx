@@ -25,11 +25,15 @@ import {
 } from "@expo/vector-icons";
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors, overlayGradient } from "../../context/ThemeContext";
 
 const ProfileScreen = () => {
   const navigation = useNavigation<any>();
   const { user, signOut, refreshDbUser } = useAuthContext();
   const { primaryColor, accentColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
+  const overlays = overlayGradient(isDarkMode);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,7 +105,7 @@ const ProfileScreen = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -134,31 +138,16 @@ const ProfileScreen = () => {
       />
 
       <LinearGradient
-        colors={[
-          "rgba(0,0,0,0.55)",
-          "rgba(0,0,0,0.20)",
-          "rgba(0,0,0,0.05)",
-          "rgba(0,0,0,0.20)",
-          "rgba(0,0,0,0.55)",
-        ]}
-        locations={[0, 0.25, 0.5, 0.75, 1]}
+        colors={overlays.side.colors}
+        locations={overlays.side.locations}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
         style={styles.sideOverlay}
       />
 
       <LinearGradient
-        colors={[
-          "transparent",
-          "rgba(0,0,0,0.02)",
-          "rgba(0,0,0,0.06)",
-          "rgba(0,0,0,0.10)",
-          "rgba(0,0,0,0.18)",
-          "rgba(0,0,0,0.22)",
-          "rgba(0,0,0,0.25)",
-          "rgba(0,0,0,0.95)",
-        ]}
-        locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
+        colors={overlays.bottom.colors}
+        locations={overlays.bottom.locations}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.bottomOverlay}
@@ -174,7 +163,14 @@ const ProfileScreen = () => {
               source={require("../../assets/mainprofile.png")}
               style={styles.profileImage}
             />
+            {isPro && <View style={styles.profileBottomCap} />}
           </View>
+
+          {isPro && (
+            <View style={[styles.proMemberTag, { backgroundColor: primaryColor }]}>
+              <Text style={styles.proMemberText}>PRO member</Text>
+            </View>
+          )}
 
           <Text style={styles.userName}>{displayName}</Text>
 
@@ -215,7 +211,7 @@ const ProfileScreen = () => {
                   name="chevron-right"
                   size={22}
                   style={{ paddingRight: responsiveWidth(2) }}
-                  color="#FFFFFF"
+                  color={colors.white}
                 />
               </View>
             </ImageBackground>
@@ -252,7 +248,7 @@ const ProfileScreen = () => {
               <Text style={styles.menuTitle}>{item.title}</Text>
             </View>
 
-            <Feather name="chevron-right" size={20} color="#6B6B6B" />
+            <Feather name="chevron-right" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         ))}
 
@@ -266,10 +262,11 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
   },
 
   scrollContent: {
@@ -323,16 +320,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: "#111",
+    backgroundColor: colors.backgroundElevated,
   },
 
-  profileImage: {
-    width: "100%",
-    height: "100%",
-  },
+     profileImage: {
+      width: "100%",
+      height: "100%",
+    },
+
+    profileBottomCap: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      width: "100%",
+      height: "45%",
+      backgroundColor: colors.overlay,
+      borderTopLeftRadius: responsiveWidth(16.5),
+      borderTopRightRadius: responsiveWidth(16.5),
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+    },
+
+    proMemberTag: {
+      alignSelf: "center",
+      borderRadius: moderateScale(20),
+      paddingHorizontal: responsiveWidth(4),
+      paddingVertical: responsiveHeight(0.6),
+      marginTop: responsiveHeight(0.5),
+    },
+
+    proMemberText: {
+      color: colors.white,
+      fontSize: moderateScale(12),
+      fontFamily: "Inter-Medium",
+    },
 
   userName: {
-    color: "#FFF",
+    color: colors.text,
     fontSize: moderateScale(22),
     marginTop: responsiveHeight(0.5),
     fontFamily: "Inter-Medium",
@@ -344,8 +369,8 @@ const styles = StyleSheet.create({
     marginTop: responsiveHeight(0.2),
   },
 
-  editText: {
-    color: "#FFE5E7",
+    editText: {
+       color: colors.textSoft,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
@@ -385,19 +410,19 @@ const styles = StyleSheet.create({
   },
 
   proText: {
-    color: "#FFF",
+    color: colors.white,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
 
   upgradeTitle: {
-    color: "#FFF",
+    color: colors.white,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
   },
 
   upgradeSubTitle: {
-    color: "#D0D0D0",
+    color: colors.textSoft,
     fontSize: moderateScale(11),
     marginTop: responsiveHeight(0.3),
     fontFamily: "Inter-Medium",
@@ -409,12 +434,12 @@ const styles = StyleSheet.create({
     marginBottom: responsiveHeight(1.5),
   },
 
-  statCard: {
-    width: responsiveWidth(29),
-    backgroundColor: "#0A0A0A",
-    borderRadius: moderateScale(16),
-    borderWidth: 1,
-    borderColor: "#330004",
+     statCard: {
+       width: responsiveWidth(29),
+       backgroundColor: colors.backgroundCard,
+       borderRadius: moderateScale(16),
+       borderWidth: 1,
+       borderColor: colors.borderStrong,
     paddingVertical: responsiveHeight(2),
     alignItems: "center",
   },
@@ -426,7 +451,7 @@ const styles = StyleSheet.create({
   },
 
   statLabel: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(11),
     marginTop: responsiveHeight(0.6),
     fontFamily: "Inter-Medium",
@@ -435,7 +460,7 @@ const styles = StyleSheet.create({
   menuCard: {
     width: "100%",
     height: responsiveHeight(8),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(14),
     marginBottom: responsiveHeight(1),
     paddingHorizontal: responsiveWidth(2.2),
@@ -453,29 +478,29 @@ const styles = StyleSheet.create({
     width: responsiveWidth(11),
     height: responsiveWidth(11),
     borderRadius: responsiveWidth(100),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     alignItems: "center",
     justifyContent: "center",
     marginRight: responsiveWidth(3),
   },
 
   menuTitle: {
-    color: "#FFF",
+    color: colors.text,
     fontSize: moderateScale(15),
     fontFamily: "Inter-Medium",
   },
 
-  logoutButton: {
-    width: "100%",
-    height: responsiveHeight(7),
-    borderWidth: 1,
-    borderColor: "#330004",
+    logoutButton: {
+      width: "100%",
+      height: responsiveHeight(7),
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
     borderRadius: moderateScale(14),
     alignItems: "center",
     justifyContent: "center",
     marginTop: responsiveHeight(0.5),
     marginBottom: responsiveHeight(6),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
   },
 
   logoutText: {

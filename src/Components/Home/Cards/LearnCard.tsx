@@ -9,20 +9,35 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../../context/ThemeContext";
 
 const LearnCard = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
-  return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.learnCard}>
-      <LinearGradient
-        colors={[
+  const { colors, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors);
+  const gradientColors = (
+    isDarkMode
+      ? [
           "rgba(0,0,0,0.75)",
           "rgba(35,0,0,0.85)",
           "rgba(80,0,0,0.95)",
           "rgba(35,0,0,0.85)",
           "rgba(0,0,0,0.75)",
-        ]}
+        ]
+      : [
+          "rgba(255,0,50,0.04)",
+          "rgba(255,0,50,0.07)",
+          "rgba(255,0,50,0.10)",
+          "rgba(255,0,50,0.07)",
+          "rgba(255,0,50,0.04)",
+        ]
+  ) as [string, string, string, string, string];
+
+  return (
+    <TouchableOpacity activeOpacity={0.8} style={styles.learnCard}>
+      <LinearGradient
+        colors={gradientColors}
         locations={[0, 0.2, 0.5, 0.8, 1]}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
@@ -43,7 +58,9 @@ const LearnCard = () => {
             <View style={styles.textContainer}>
               <Text style={styles.learnTitle}>Learn from the pros</Text>
 
-              <Text style={styles.learnDesc}>
+              <Text
+                style={[styles.learnDesc, { color: isDarkMode ? "#E79B9B" : "#9B3340" }]}
+              >
                 Train with drills and insights from elite
                 {"\n"}
                 players and coaches.
@@ -64,7 +81,8 @@ const LearnCard = () => {
 
 export default LearnCard;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   learnCard: {
     width: responsiveWidth(93),
     alignSelf: "center",
@@ -72,8 +90,8 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(12),
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "rgba(255,0,50,0.2)",
-    backgroundColor: "#120004",
+    borderColor: "rgba(255,0,50,0.15)",
+    backgroundColor: colors.backgroundElevated,
     position: "relative",
   },
 
@@ -125,13 +143,12 @@ const styles = StyleSheet.create({
   },
 
   learnTitle: {
-    color: "#fff",
+    color: colors.text,
     fontSize: moderateScale(14),
     fontFamily: "Poppins-Medium",
   },
 
   learnDesc: {
-    color: "#E79B9B",
     fontSize: moderateScale(10),
     lineHeight: moderateScale(14),
     fontFamily: "Inter-Regular",

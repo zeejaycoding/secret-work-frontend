@@ -18,10 +18,14 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { completeOnboarding } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
+import { ThemeColors, darkColors } from "../../context/ThemeContext";
 
 const PaymentSuccess = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
+  const colors = darkColors;
+  const statusBarStyle = "light-content" as const;
+  const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleStart = async () => {
@@ -41,7 +45,7 @@ const PaymentSuccess = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -125,7 +129,7 @@ const PaymentSuccess = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.white} size="small" />
           ) : (
             <Text style={styles.buttonText}>Start exploring</Text>
           )}
@@ -137,101 +141,102 @@ const PaymentSuccess = () => {
 
 export default PaymentSuccess;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "black",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  redHorizontal: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(30),
-  },
+    redHorizontal: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(30),
+    },
 
-  redVertical: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(55),
-  },
+    redVertical: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(55),
+    },
 
-  sideOverlay: {
-    position: "absolute",
-    width: responsiveWidth(100),
-    height: responsiveHeight(100),
-  },
+    sideOverlay: {
+      position: "absolute",
+      width: responsiveWidth(100),
+      height: responsiveHeight(100),
+    },
 
-  bottomOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: responsiveWidth(100),
-    height: responsiveHeight(35),
-  },
+    bottomOverlay: {
+      position: "absolute",
+      bottom: 0,
+      width: responsiveWidth(100),
+      height: responsiveHeight(35),
+    },
 
-  contentContainer: {
-    width: responsiveWidth(100),
-    alignItems: "center",
-    paddingHorizontal: moderateScale(20),
-    marginTop: responsiveHeight(-15),
-  },
+    contentContainer: {
+      width: responsiveWidth(100),
+      alignItems: "center",
+      paddingHorizontal: moderateScale(20),
+      marginTop: responsiveHeight(-15),
+    },
 
-  iconOuter: {
-    width: moderateScale(100),
-    height: moderateScale(100),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#660008",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-  },
+    iconOuter: {
+      width: moderateScale(100),
+      height: moderateScale(100),
+      borderRadius: moderateScale(100),
+      backgroundColor: "#660008",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+    },
 
-  iconInner: {
-    width: moderateScale(62),
-    height: moderateScale(62),
-    borderRadius: moderateScale(100),
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    iconInner: {
+      width: moderateScale(62),
+      height: moderateScale(62),
+      borderRadius: moderateScale(100),
+      backgroundColor: colors.white,
+      justifyContent: "center",
+      alignItems: "center",
+    },
 
-  title: {
-    color: "#FFFFFF",
-    fontSize: moderateScale(25),
-    fontFamily: "Poppins-Medium",
-    textAlign: "center",
-  },
+    title: {
+      color: colors.text,
+      fontSize: moderateScale(25),
+      fontFamily: "Poppins-Medium",
+      textAlign: "center",
+    },
 
-  subtitle: {
-    color: "#6B6B6B",
-    fontSize: moderateScale(12),
-    textAlign: "center",
-    lineHeight: moderateScale(18),
-    fontFamily: "Poppins-Regular",
-    width: responsiveWidth(65),
-    marginBottom: responsiveHeight(3),
-  },
+    subtitle: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      textAlign: "center",
+      lineHeight: moderateScale(18),
+      fontFamily: "Poppins-Regular",
+      width: responsiveWidth(65),
+      marginBottom: responsiveHeight(3),
+    },
 
-  button: {
-    width: responsiveWidth(92),
-    height: responsiveHeight(6.5),
-    borderRadius: moderateScale(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: responsiveHeight(3),
-    backgroundColor: "#E50914",
-  },
+    button: {
+      width: responsiveWidth(92),
+      height: responsiveHeight(6.5),
+      borderRadius: moderateScale(12),
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: responsiveHeight(3),
+      backgroundColor: "#E50914",
+    },
 
-  buttonText: {
-    color: "#fff",
-    fontSize: moderateScale(14),
-    fontFamily: "Inter-Medium",
-  },
-});
+    buttonText: {
+      color: colors.white,
+      fontSize: moderateScale(14),
+      fontFamily: "Inter-Medium",
+    },
+  });

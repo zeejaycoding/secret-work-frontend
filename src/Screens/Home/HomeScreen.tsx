@@ -20,16 +20,19 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import QuickWorkout from "../../Components/Home/Cards/QuickWorkout";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const WelcomeScreen = () => {
   const navigation = useNavigation<any>();
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
       <LinearGradient
@@ -92,7 +95,7 @@ const WelcomeScreen = () => {
         style={styles.bottomOverlay}
       />
 
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={statusBarStyle} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <Header />
@@ -110,10 +113,11 @@ const WelcomeScreen = () => {
 
 export default WelcomeScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: colors.background,
   },
 
   backgroundImage: {

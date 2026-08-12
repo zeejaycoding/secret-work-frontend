@@ -17,6 +17,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { useBranding } from "../../context/BrandingContext";
+import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 
 const difficultyLevels = [
   {
@@ -53,198 +54,220 @@ const QuickWorkoutFirst = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { primaryColor } = useBranding();
+  const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const styles = createStyles(colors, isDarkMode);
   const [selectedLevel, setSelectedLevel] = useState(2);
   const coach = route.params?.coach || "";
+
+  const content = (
+    <>
+      <View style={styles.contentContainer}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Feather
+            name="chevron-left"
+            size={moderateScale(22)}
+            color={isDarkMode ? colors.white : colors.text}
+          />
+        </TouchableOpacity>
+
+        <View style={styles.progressContainer}>
+          <Text style={styles.stepText}>Step 1 of 2</Text>
+
+          <View style={styles.progressBar}>
+            <View style={styles.progressFill} />
+          </View>
+        </View>
+
+        <View style={styles.headingContainer}>
+          <Text style={styles.heading}>Workout difficulty level</Text>
+
+          <Text style={styles.subHeading}>
+            Select the exact level of your experience
+          </Text>
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.cardWrapper}>
+            {difficultyLevels.map((item) => {
+              const isActive = selectedLevel === item.id;
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.8}
+                  style={[styles.card, isActive && styles.activeCard]}
+                  onPress={() => setSelectedLevel(item.id)}
+                >
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={moderateScale(22)}
+                    color="#E50914"
+                  />
+
+                  <Text
+                    style={[
+                      styles.cardText,
+                      isActive && styles.activeCardText,
+                    ]}
+                  >
+                    {item.title}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={styles.bottomFixedContainer}>
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Ionicons
+              name="time"
+              size={moderateScale(12)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+
+            <Text style={styles.infoText}>
+              {
+                difficultyLevels.find((l) => l.id === selectedLevel)?.time ||
+                  "30 mins"
+              }
+            </Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons
+              name="basketball"
+              size={moderateScale(12)}
+              color={isDarkMode ? colors.white : colors.text}
+            />
+
+            <Text style={styles.infoText}>
+              {difficultyLevels.find((l) => l.id === selectedLevel)
+                ?.levelLabel || "Intermediate"}
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[styles.nextButton, { backgroundColor: primaryColor }]}
+          onPress={() =>
+            navigation.navigate("QuickWorkoutSecond", {
+              level: difficultyLevels.find((l) => l.id === selectedLevel)?.title || "Random",
+              coach: coach || undefined,
+            })
+          }
+        >
+          <Text style={styles.nextButtonText}>Next</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
 
   return (
     <View style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content"
+        barStyle={statusBarStyle}
       />
 
-      <ImageBackground
-        source={require("../../assets/forgotpassword.png")}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <LinearGradient
-          colors={[
-            "rgba(120,0,10,0.30)",
-            "rgba(180,0,15,0.20)",
-            "rgba(255,0,21,0.10)",
-            "rgba(255,0,21,0.05)",
-            "transparent",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.redHorizontal}
-        />
+      {isDarkMode ? (
+        <ImageBackground
+          source={require("../../assets/forgotpassword.png")}
+          resizeMode="cover"
+          style={styles.backgroundImage}
+        >
+          <LinearGradient
+            colors={[
+              "rgba(120,0,10,0.30)",
+              "rgba(180,0,15,0.20)",
+              "rgba(255,0,21,0.10)",
+              "rgba(255,0,21,0.05)",
+              "transparent",
+            ]}
+            locations={[0, 0.25, 0.5, 0.75, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.redHorizontal}
+          />
 
-        <LinearGradient
-          colors={[
-            "rgba(255,0,21,0.08)",
-            "rgba(255,0,21,0.05)",
-            "rgba(255,0,21,0.03)",
-            "rgba(255,0,21,0.015)",
-            "rgba(255,0,21,0.005)",
-            "transparent",
-          ]}
-          locations={[0, 0.2, 0.4, 0.6, 0.8, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.redVertical}
-        />
+          <LinearGradient
+            colors={[
+              "rgba(255,0,21,0.08)",
+              "rgba(255,0,21,0.05)",
+              "rgba(255,0,21,0.03)",
+              "rgba(255,0,21,0.015)",
+              "rgba(255,0,21,0.005)",
+              "transparent",
+            ]}
+            locations={[0, 0.2, 0.4, 0.6, 0.8, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.redVertical}
+          />
 
-        <LinearGradient
-          colors={[
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.05)",
-            "rgba(0,0,0,0.20)",
-            "rgba(0,0,0,0.55)",
-          ]}
-          locations={[0, 0.25, 0.5, 0.75, 1]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.sideOverlay}
-        />
+          <LinearGradient
+            colors={[
+              "rgba(0,0,0,0.55)",
+              "rgba(0,0,0,0.20)",
+              "rgba(0,0,0,0.05)",
+              "rgba(0,0,0,0.20)",
+              "rgba(0,0,0,0.55)",
+            ]}
+            locations={[0, 0.25, 0.5, 0.75, 1]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.sideOverlay}
+          />
 
-        <LinearGradient
-          colors={[
-            "transparent",
-            "rgba(0,0,0,0.02)",
-            "rgba(0,0,0,0.06)",
-            "rgba(0,0,0,0.10)",
-            "rgba(0,0,0,0.18)",
-            "rgba(0,0,0,0.22)",
-            "rgba(0,0,0,0.25)",
-            "rgba(0,0,0,0.95)",
-          ]}
-          locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.bottomOverlay}
-        />
+          <LinearGradient
+            colors={[
+              "transparent",
+              "rgba(0,0,0,0.02)",
+              "rgba(0,0,0,0.06)",
+              "rgba(0,0,0,0.10)",
+              "rgba(0,0,0,0.18)",
+              "rgba(0,0,0,0.22)",
+              "rgba(0,0,0,0.25)",
+              "rgba(0,0,0,0.95)",
+            ]}
+            locations={[0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.bottomOverlay}
+          />
 
-        <View style={styles.contentContainer}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Feather
-              name="chevron-left"
-              size={moderateScale(22)}
-              color="#fff"
-            />
-          </TouchableOpacity>
-
-          <View style={styles.progressContainer}>
-            <Text style={styles.stepText}>Step 1 of 2</Text>
-
-            <View style={styles.progressBar}>
-              <View style={styles.progressFill} />
-            </View>
-          </View>
-
-          <View style={styles.headingContainer}>
-            <Text style={styles.heading}>Workout difficulty level</Text>
-
-            <Text style={styles.subHeading}>
-              Select the exact level of your experience
-            </Text>
-          </View>
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            <View style={styles.cardWrapper}>
-              {difficultyLevels.map((item) => {
-                const isActive = selectedLevel === item.id;
-
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.8}
-                    style={[styles.card, isActive && styles.activeCard]}
-                    onPress={() => setSelectedLevel(item.id)}
-                  >
-                    <MaterialCommunityIcons
-                      name={item.icon as any}
-                      size={moderateScale(22)}
-                      color="#E50914"
-                    />
-
-                    <Text
-                      style={[
-                        styles.cardText,
-                        isActive && styles.activeCardText,
-                      ]}
-                    >
-                      {item.title}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </ScrollView>
-        </View>
-
-        <View style={styles.bottomFixedContainer}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
-              <Ionicons name="time" size={moderateScale(12)} color="#FFFFFF" />
-
-              <Text style={styles.infoText}>
-                {
-                  difficultyLevels.find((l) => l.id === selectedLevel)?.time ||
-                    "30 mins"
-                }
-              </Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <MaterialCommunityIcons
-                name="basketball"
-                size={moderateScale(12)}
-                color="#FFFFFF"
-              />
-
-              <Text style={styles.infoText}>
-                {difficultyLevels.find((l) => l.id === selectedLevel)
-                  ?.levelLabel || "Intermediate"}
-              </Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[styles.nextButton, { backgroundColor: primaryColor }]}
-            onPress={() =>
-              navigation.navigate("QuickWorkoutSecond", {
-                level: difficultyLevels.find((l) => l.id === selectedLevel)?.title || "Random",
-                coach: coach || undefined,
-              })
-            }
-          >
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+          {content}
+        </ImageBackground>
+      ) : (
+        <View style={styles.lightBackground}>{content}</View>
+      )}
     </View>
   );
 };
 
 export default QuickWorkoutFirst;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.background,
+  },
+
+  lightBackground: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
 
   backgroundImage: {
@@ -294,7 +317,7 @@ const styles = StyleSheet.create({
     width: responsiveWidth(10),
     height: responsiveWidth(10),
     borderRadius: responsiveWidth(6),
-    backgroundColor: "#e96e6e13",
+    backgroundColor: isDarkMode ? "#e96e6e13" : colors.backgroundInput,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -304,7 +327,7 @@ const styles = StyleSheet.create({
   },
 
   stepText: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(14),
     marginBottom: responsiveHeight(1.2),
     fontFamily: "Inter-Medium",
@@ -313,7 +336,7 @@ const styles = StyleSheet.create({
   progressBar: {
     width: "100%",
     height: responsiveHeight(0.9),
-    backgroundColor: "#161616",
+    backgroundColor: colors.backgroundInput,
     overflow: "hidden",
     borderRadius: 100,
   },
@@ -329,13 +352,13 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(18),
     fontFamily: "Inter-Medium",
   },
 
   subHeading: {
-    color: "#6B6B6B",
+    color: colors.textSecondary,
     fontSize: moderateScale(12),
     fontFamily: "Inter-Regular",
   },
@@ -354,22 +377,22 @@ const styles = StyleSheet.create({
   card: {
     width: responsiveWidth(44.5),
     height: responsiveHeight(14),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
     borderRadius: moderateScale(12),
     justifyContent: "center",
     alignItems: "center",
     marginBottom: responsiveHeight(1.8),
     borderWidth: 1,
-    borderColor: "#111111",
+    borderColor: colors.backgroundElevated,
   },
 
   activeCard: {
-    backgroundColor: "#1A0002",
+    backgroundColor: isDarkMode ? "#1A0002" : "rgba(229,9,20,0.10)",
     borderColor: "#E50914",
   },
 
   cardText: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
     fontSize: moderateScale(12.5),
     marginTop: responsiveHeight(1.2),
     textAlign: "center",
@@ -377,7 +400,7 @@ const styles = StyleSheet.create({
   },
 
   activeCardText: {
-    color: "#fff",
+    color: isDarkMode ? colors.white : colors.text,
   },
 
   bottomFixedContainer: {
@@ -385,10 +408,10 @@ const styles = StyleSheet.create({
     bottom: responsiveHeight(0),
     width: responsiveWidth(100),
     paddingHorizontal: responsiveWidth(4),
-    borderTopColor: "#161616",
+    borderTopColor: colors.backgroundInput,
     borderTopWidth: 1,
     paddingVertical: responsiveHeight(1.5),
-    backgroundColor: "#0A0A0A",
+    backgroundColor: colors.backgroundCard,
   },
 
   infoRow: {
@@ -404,7 +427,7 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: "#929292",
+    color: isDarkMode ? colors.textMuted : "#000000",
     fontSize: moderateScale(12),
     marginLeft: responsiveWidth(1.2),
     fontFamily: "Inter-Medium",
@@ -420,7 +443,7 @@ const styles = StyleSheet.create({
   },
 
   nextButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: moderateScale(16),
     fontFamily: "Inter-Medium",
   },
