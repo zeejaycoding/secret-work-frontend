@@ -19,6 +19,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { loadPreferences, savePreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 type prefrenceItemProps = {
   title: string;
@@ -33,19 +34,19 @@ type prefrenceItemProps = {
 const prefrenceData = [
   {
     id: "1",
-    title: "Autoplay Videos",
+    titleKey: "autoplayVideos",
     image: require("../../assets/auto.png"),
     hasSwitch: true,
   },
   {
     id: "2",
-    title: "Data Saver Mode",
+    titleKey: "dataSaverMode",
     image: require("../../assets/data.png"),
     hasSwitch: true,
   },
   {
     id: "3",
-    title: "Video Quality",
+    titleKey: "videoQuality",
     image: require("../../assets/video.png"),
     screen: "VideoQuality",
     valueText: "Auto",
@@ -127,9 +128,10 @@ const PrefrenceItem = ({
 const PlaybackSettings = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
-  const [toggles, setToggles] = useState<Record<string, boolean>>({
+  const [toggles, setToggles] = useState<Record<string, boolean | undefined>>({
     "1": true,
     "2": true,
   });
@@ -170,15 +172,15 @@ const PlaybackSettings = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Playback Settings</Text>
+        <Text style={styles.headerTitle}>{t("playbackSettings")}</Text>
       </View>
 
       <View style={styles.listContainer}>
         {prefrenceData.map((item) => (
-          <PrefrenceItem
-            key={item.id}
-            title={item.title}
-            image={item.image}
+            <PrefrenceItem
+              key={item.id}
+              title={t(item.titleKey)}
+              image={item.image}
             valueText={
               item.id === "3" ? videoQuality : item.valueText
             }

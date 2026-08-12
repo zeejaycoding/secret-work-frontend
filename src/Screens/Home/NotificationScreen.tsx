@@ -25,11 +25,13 @@ import {
 } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 const NotificationScreen = () => {
   const navigation = useNavigation<any>();
   const { accentColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -198,7 +200,7 @@ const NotificationScreen = () => {
             />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t("notifications")}</Text>
         </View>
 
         <FlatList

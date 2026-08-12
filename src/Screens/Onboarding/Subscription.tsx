@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
@@ -18,23 +19,25 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { createCheckoutSession, getSubscriptionStatus, getPlans } from "../../services/api";
+import { createCheckoutSession, getSubscriptionStatus, getPlans, validateDiscountCode } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { ThemeColors, darkColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
-const FALLBACK_BENEFITS = [
-  "Unlimited Access to All Drills",
-  "Structured Workouts That Actually Improve You",
-  "Learn From Real Game Situations",
-  "Faster Progress With Guided Sessions",
-  "New Drills Added Regularly",
-];
+  const FALLBACK_BENEFIT_KEYS = [
+    "benefit1",
+    "benefit2",
+    "benefit3",
+    "benefit4",
+    "benefit5",
+  ];
 
 const Subscription = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const colors = darkColors;
   const statusBarStyle = "light-content" as const;
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annually">(
@@ -42,12 +45,22 @@ const Subscription = () => {
   );
   const [loading, setLoading] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
 
   useEffect(() => {
     getPlans()
       .then(setPlans)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (selectedPlan !== "annually") {
+      setAppliedDiscount(null);
+      setDiscountCode("");
+    }
+  }, [selectedPlan]);
 
   const monthlyPlan = plans.find((p) => p.key === "monthly");
   const annualPlan = plans.find((p) => p.key === "annual");
@@ -63,6 +76,10 @@ const Subscription = () => {
     formatPrice(currentPlan?.price?.amount) ??
     (selectedPlan === "monthly" ? "$9.5" : "$79");
 
+  const discountedPriceText = appliedDiscount && selectedPlan === "annually"
+    ? formatPrice((currentPlan?.price?.amount || 79) - appliedDiscount.amount)
+    : null;
+
   const periodText =
     currentPlan?.price?.interval === "year"
       ? "/year"
@@ -77,12 +94,33 @@ const Subscription = () => {
       .filter((b: any) => b.enabled)
       .map((b: any) => b.text) || [];
 
-  const benefits: string[] = visibleBenefits.length ? visibleBenefits : FALLBACK_BENEFITS;
+  const benefits: string[] = visibleBenefits.length
+    ? visibleBenefits
+    : FALLBACK_BENEFIT_KEYS.map((k) => t(k));
+
+  const handleApplyDiscount = async () => {
+    if (!discountCode.trim()) return;
+    setDiscountLoading(true);
+    try {
+      const result = await validateDiscountCode(discountCode.trim(), "annually");
+      if (result.valid) {
+        setAppliedDiscount({ code: result.code || discountCode, amount: result.discountAmount || 5 });
+          Alert.alert(t("discountApplied"), result.message || `$${result.discountAmount} off applied!`);
+      } else {
+        Alert.alert(t("invalidCode"), result.message || "This code is not valid");
+        setAppliedDiscount(null);
+      }
+    } catch {
+      Alert.alert(t("error"), t("discountValidateError"));
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
 
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const { url } = await createCheckoutSession(selectedPlan);
+      const { url } = await createCheckoutSession(selectedPlan, appliedDiscount?.code);
       if (url) {
         const Linking = require("expo-linking");
         await Linking.openURL(url);
@@ -90,7 +128,7 @@ const Subscription = () => {
       }
     } catch (error: any) {
       const msg = error?.response?.data?.error || "Failed to start payment. Try again.";
-      Alert.alert("Payment Error", msg);
+      Alert.alert(t("paymentError"), msg);
     } finally {
       setLoading(false);
     }
@@ -111,8 +149,8 @@ const Subscription = () => {
       }
     }
     Alert.alert(
-      "Payment Status",
-      "Payment is being processed. Please check your subscription status later."
+      t("paymentStatus"),
+      t("paymentProcessing")
     );
   };
 
@@ -206,14 +244,14 @@ const Subscription = () => {
               ]}
               onPress={() => setSelectedPlan("monthly")}
             >
-              <Text
-                style={[
-                  styles.switchText,
-                  selectedPlan === "monthly" && styles.activeSwitchText,
-                ]}
-              >
-                Monthly
-              </Text>
+                <Text
+                  style={[
+                    styles.switchText,
+                    selectedPlan === "monthly" && styles.activeSwitchText,
+                  ]}
+                >
+                  {t("monthly")}
+                </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -224,14 +262,14 @@ const Subscription = () => {
               ]}
               onPress={() => setSelectedPlan("annually")}
             >
-              <Text
-                style={[
-                  styles.switchText,
-                  selectedPlan === "annually" && styles.activeSwitchText,
-                ]}
-              >
-                Annually
-              </Text>
+                <Text
+                  style={[
+                    styles.switchText,
+                    selectedPlan === "annually" && styles.activeSwitchText,
+                  ]}
+                >
+                  {t("annually")}
+                </Text>
             </TouchableOpacity>
           </View>
 
@@ -246,26 +284,70 @@ const Subscription = () => {
             end={{ x: 1, y: 1 }}
             style={styles.card}
           >
-            <Text style={styles.title}>Popular</Text>
+            <Text style={styles.title}>{t("popular")}</Text>
 
-            <Text style={styles.description}>
-              Get unlimited access to elite drills, structured workouts, and
-              real training designed to level you up faster.
-            </Text>
+            <Text style={styles.description}>{t("upgradeDesc")}</Text>
 
             <View style={styles.priceRow}>
-              <Text style={styles.price}>
-                {priceText}
-              </Text>
+              {discountedPriceText ? (
+                <>
+                  <Text style={[styles.price, styles.originalPrice]}>
+                    {priceText}
+                  </Text>
+                  <Text style={styles.price}>
+                    {discountedPriceText}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.price}>
+                  {priceText}
+                </Text>
+              )}
 
               <Text style={styles.monthText}>
                 {periodText}
               </Text>
             </View>
 
+            {appliedDiscount && (
+              <View style={styles.discountBadge}>
+                <Text style={styles.discountBadgeText}>
+                  {t("saveAmount", { amount: `$${appliedDiscount.amount}` })}
+                </Text>
+              </View>
+            )}
+
+            {selectedPlan === "annually" && !appliedDiscount && (
+              <View style={styles.discountCodeContainer}>
+                <Text style={styles.discountLabel}>{t("discountCodeLabel")}</Text>
+                <View style={styles.discountInputRow}>
+                  <TextInput
+                    style={styles.discountInput}
+                    placeholder={t("enterCode")}
+                    placeholderTextColor={colors.textMuted}
+                    value={discountCode}
+                    onChangeText={setDiscountCode}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity
+                    style={[styles.discountButton, { backgroundColor: primaryColor }]}
+                    onPress={handleApplyDiscount}
+                    disabled={discountLoading || !discountCode.trim()}
+                  >
+                    {discountLoading ? (
+                      <ActivityIndicator color={colors.white} size="small" />
+                    ) : (
+                      <Text style={styles.discountButtonText}>{t("apply")}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             <View style={styles.divider} />
 
-            <Text style={styles.whatText}>What you'll get:</Text>
+            <Text style={styles.whatText}>{t("whatYouGet")}</Text>
 
             <View style={styles.benefitsContainer}>
               {benefits.map((item, index) => (
@@ -298,7 +380,7 @@ const Subscription = () => {
                 {loading ? (
                   <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                  <Text style={styles.subscribeText}>Subscribe</Text>
+                   <Text style={styles.subscribeText}>{t("subscribe")}</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
@@ -308,7 +390,7 @@ const Subscription = () => {
             activeOpacity={0.7}
             onPress={() => navigation.reset({ index: 0, routes: [{ name: "BottomTabs" }] })}
           >
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={styles.skipText}>{t("skip")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -461,11 +543,78 @@ const createStyles = (colors: ThemeColors) =>
       fontFamily: "Inter-Medium",
     },
 
+    originalPrice: {
+      fontSize: moderateScale(20),
+      color: colors.textMuted,
+      textDecorationLine: "line-through",
+      marginRight: moderateScale(8),
+      marginBottom: moderateScale(6),
+    },
+
     monthText: {
       color: colors.textSecondary,
       fontSize: moderateScale(15),
       marginBottom: moderateScale(6),
       marginLeft: moderateScale(4),
+    },
+
+    discountBadge: {
+      backgroundColor: "#22C55E",
+      borderRadius: moderateScale(8),
+      paddingHorizontal: moderateScale(12),
+      paddingVertical: moderateScale(4),
+      alignSelf: "flex-start",
+      marginBottom: responsiveHeight(1.5),
+    },
+
+    discountBadgeText: {
+      color: colors.white,
+      fontSize: moderateScale(12),
+      fontFamily: "Inter-Bold",
+    },
+
+    discountCodeContainer: {
+      marginBottom: responsiveHeight(1.5),
+    },
+
+    discountLabel: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(12),
+      marginBottom: moderateScale(8),
+      fontFamily: "Inter-Medium",
+    },
+
+    discountInputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: moderateScale(8),
+    },
+
+    discountInput: {
+      flex: 1,
+      height: moderateScale(40),
+      backgroundColor: "rgba(255,255,255,0.1)",
+      borderRadius: moderateScale(8),
+      paddingHorizontal: moderateScale(12),
+      color: colors.white,
+      fontSize: moderateScale(13),
+      fontFamily: "Inter-Medium",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.15)",
+    },
+
+    discountButton: {
+      height: moderateScale(40),
+      paddingHorizontal: moderateScale(16),
+      borderRadius: moderateScale(8),
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    discountButtonText: {
+      color: colors.white,
+      fontSize: moderateScale(13),
+      fontFamily: "Inter-Bold",
     },
 
     divider: {

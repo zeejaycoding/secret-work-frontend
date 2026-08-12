@@ -10,11 +10,13 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { getTopCoach } from "../../../services/api";
 import { useAppTheme, ThemeColors } from "../../../context/ThemeContext";
+import { useLanguage } from "../../../i18n";
 
 const QuickWorkout = () => {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useAppTheme();
   const styles = createStyles(colors);
+  const { t } = useLanguage();
   const [coachName, setCoachName] = useState("");
   const gradientColors = (
     isDarkMode
@@ -74,13 +76,13 @@ const QuickWorkout = () => {
 
             <View style={styles.textContainer}>
               <Text style={styles.learnTitle}>
-                Quick Workouts with {coachName || "Coach Hudson"}
+                {t("quickWorkoutsWith", { name: coachName || "Coach Hudson" })}
               </Text>
 
               <Text
                 style={[styles.learnDesc, { color: isDarkMode ? "#AB65A8" : "#8A3A86" }]}
               >
-                Wednesday 8pm Est
+                {t("wednesday8pmEst")}
               </Text>
             </View>
           </View>

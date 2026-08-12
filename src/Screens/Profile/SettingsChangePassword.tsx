@@ -23,11 +23,13 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { changePassword } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 const SettingsChangePassword = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
   const [oldPassword, setOldPassword] = useState("");
@@ -41,35 +43,35 @@ const SettingsChangePassword = () => {
 
   const handleChangePassword = async () => {
     if (!oldPassword.trim()) {
-      Alert.alert("Required", "Please enter your current password");
+      Alert.alert(t("required"), t("enterCurrentPassword"));
       return;
     }
     if (!password.trim()) {
-      Alert.alert("Required", "Please enter a new password");
+      Alert.alert(t("required"), t("enterNewPassword"));
       return;
     }
     if (password.length < 8) {
-      Alert.alert("Too short", "New password must be at least 8 characters");
+      Alert.alert(t("tooShort"), t("passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Mismatch", "New passwords do not match");
+      Alert.alert(t("mismatch"), t("passwordsNoMatch"));
       return;
     }
     if (oldPassword === password) {
-      Alert.alert("Same password", "New password must be different from current password");
+      Alert.alert(t("samePassword"), t("passwordSameAsOld"));
       return;
     }
 
     setIsLoading(true);
     try {
       await changePassword(oldPassword, password);
-      Alert.alert("Success", "Password changed successfully", [
-        { text: "OK", onPress: () => navigation.goBack() },
+      Alert.alert(t("success"), t("passwordChanged"), [
+        { text: t("ok"), onPress: () => navigation.goBack() },
       ]);
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Failed to change password";
-      Alert.alert("Error", msg);
+      Alert.alert(t("error"), msg);
     } finally {
       setIsLoading(false);
     }
@@ -108,11 +110,9 @@ const SettingsChangePassword = () => {
             </View>
 
             <View style={styles.topSection}>
-              <Text style={styles.title}>Create new password</Text>
+              <Text style={styles.title}>{t("createNewPassword")}</Text>
 
-              <Text style={styles.description}>
-                Choose a secure password to protect your account
-              </Text>
+              <Text style={styles.description}>{t("passwordSubDesc")}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -124,7 +124,7 @@ const SettingsChangePassword = () => {
                 />
 
                 <TextInput
-                  placeholder="Old password"
+                  placeholder={t("phOldPassword")}
                   placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showOldPassword}
@@ -152,7 +152,7 @@ const SettingsChangePassword = () => {
                 />
 
                 <TextInput
-                  placeholder="New password"
+                  placeholder={t("phNewPassword")}
                   placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showPassword}
@@ -180,7 +180,7 @@ const SettingsChangePassword = () => {
                 />
 
                 <TextInput
-                  placeholder="Confirm password"
+                  placeholder={t("phConfirmPassword")}
                   placeholderTextColor={colors.textSecondary}
                   style={styles.input}
                   secureTextEntry={!showConfirmPassword}
@@ -203,7 +203,7 @@ const SettingsChangePassword = () => {
               </View>
 
               <View style={styles.hintsContainer}>
-                <Text style={styles.hintsTitle}>Password hints</Text>
+                <Text style={styles.hintsTitle}>{t("passwordHints")}</Text>
 
                 <View style={styles.hintRow}>
                   <Ionicons
@@ -212,7 +212,7 @@ const SettingsChangePassword = () => {
                     color="#34C759"
                   />
 
-                  <Text style={styles.hintText}>At least 8 characters</Text>
+                  <Text style={styles.hintText}>{t("hintMinChars")}</Text>
                 </View>
 
                 <View style={styles.hintRow}>
@@ -223,7 +223,7 @@ const SettingsChangePassword = () => {
                   />
 
                   <Text style={styles.hintText}>
-                    Includes a number or symbol
+                    {t("hintNumberSymbol")}
                   </Text>
                 </View>
               </View>
@@ -237,7 +237,7 @@ const SettingsChangePassword = () => {
                 {isLoading ? (
                   <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                  <Text style={styles.confirmText}>Confirm</Text>
+                  <Text style={styles.confirmText}>{t("confirm")}</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -18,6 +18,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { getWorkouts } from "../../services/api";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage, translateLevel } from "../../i18n";
 
 const toCardShape = (drill: any) => ({
   id: drill.id,
@@ -38,6 +39,7 @@ const toSectionShape = (section: any) => ({
 const WorkoutCard = ({ item, coach }: any) => {
   const navigation = useNavigation<any>();
   const { colors } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   return (
     <TouchableOpacity
@@ -72,7 +74,7 @@ const WorkoutCard = ({ item, coach }: any) => {
           </Text>
 
           <Text style={styles.workoutSubText}>
-            {item.level}, {item.duration}
+            {translateLevel(t, item.level)}, {item.duration}
           </Text>
         </View>
       </ImageBackground>
@@ -83,6 +85,7 @@ const WorkoutCard = ({ item, coach }: any) => {
 const WorkoutScreen = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const [workoutData, setWorkoutData] = useState<any[]>([]);
 
@@ -110,11 +113,9 @@ const WorkoutScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <Text style={styles.heading}>Workouts</Text>
+        <Text style={styles.heading}>{t("workouts")}</Text>
 
-        <Text style={styles.subHeading}>
-          Every drill. Every level. Pick your battle.
-        </Text>
+        <Text style={styles.subHeading}>{t("workoutSub")}</Text>
 
         {workoutData.map((section) => {
           return (

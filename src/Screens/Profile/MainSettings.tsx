@@ -16,6 +16,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 type SettingItemProps = {
   title: string;
@@ -26,19 +27,19 @@ type SettingItemProps = {
 const settingsData = [
   {
     id: "1",
-    title: "Change password",
+    titleKey: "changePassword",
     image: require("../../assets/changepassword.png"),
     screen: "SettingsChangePassword",
   },
   {
     id: "2",
-    title: "App Preferences",
+    titleKey: "appPreferences",
     image: require("../../assets/app.png"),
     screen: "Prefrence",
   },
   {
     id: "3",
-    title: "Playback settings",
+    titleKey: "playbackSettings",
     image: require("../../assets/play.png"),
     screen: "PlaybackSettings",
   },
@@ -70,6 +71,7 @@ const SettingItem = ({ title, image, onPress }: SettingItemProps) => {
 const MainSettings = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
   return (
@@ -85,14 +87,14 @@ const MainSettings = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>{t("settings")}</Text>
       </View>
 
       <View style={styles.listContainer}>
         {settingsData.map((item) => (
           <SettingItem
             key={item.id}
-            title={item.title}
+            title={t(item.titleKey)}
             image={item.image}
             onPress={() => navigation.navigate(item.screen)}
           />

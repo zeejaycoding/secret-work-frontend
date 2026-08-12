@@ -22,6 +22,8 @@ import { markDrillComplete, recordDrillView, reportWatchTime } from "../../servi
 import { getCachedPreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const QUALITY_OPTIONS = ["Auto", "1080p", "720p", "480p", "360p"];
 
@@ -269,6 +271,16 @@ const DrilLibraryDetail = ({ route }: any) => {
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
   const drill = route?.params?.drill;
+  const isPro = useIsPro();
+
+  if (drill?.proId && !isPro) {
+    return (
+      <ProPaywall
+        title="This drill is a Pro feature"
+        subtitle="Subscribe to Pro to unlock drills from elite players and coaches."
+      />
+    );
+  }
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showQuality, setShowQuality] = useState(false);

@@ -19,19 +19,47 @@ import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { Audio } from "expo-av";
 
-import { getPodcast, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
+import { getPodcast, getPros, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useIsPro } from "../../utils/subscription";
+import { useLanguage } from "../../i18n";
+import ProPaywall from "../../Components/ProPaywall";
 
 const PodcastDetail = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const { id } = route.params || {};
   const soundRef = useRef<Audio.Sound | null>(null);
   const [podcast, setPodcast] = useState<any>(null);
+  const isPro = useIsPro();
+  const [proNames, setProNames] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    getPros()
+      .then((pros) =>
+        setProNames(
+          new Set(
+            (pros || []).map((p: any) => String(p.name).toLowerCase().trim())
+          )
+        )
+      )
+      .catch(() => setProNames(new Set()));
+  }, []);
+
+  const isProPodcast = !!(
+    podcast &&
+    proNames.size > 0 &&
+    (proNames.has(String(podcast.host || "").toLowerCase().trim()) ||
+      (podcast.guest &&
+        proNames.has(String(podcast.guest).toLowerCase().trim())))
+  );
+
+  const locked = !isPro && isProPodcast;
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(1);
   const [position, setPosition] = useState(0);
@@ -81,7 +109,7 @@ const PodcastDetail = () => {
   );
 
   useEffect(() => {
-    if (!podcast) return;
+    if (!podcast || locked) return;
     loadAudio();
     const interval = setInterval(() => flushProgress(), 30000);
 
@@ -90,7 +118,7 @@ const PodcastDetail = () => {
       flushProgress(completionRef.current);
       unloadAudio();
     };
-  }, [podcast, flushProgress]);
+  }, [podcast, flushProgress, locked]);
 
   const loadAudio = async () => {
     listenedSecRef.current = 0;
@@ -210,6 +238,15 @@ const PodcastDetail = () => {
   };
 
   const progress = position / duration;
+
+  if (podcast && locked) {
+    return (
+      <ProPaywall
+        title={t("podcastProTitle")}
+        subtitle={t("podcastProDesc")}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

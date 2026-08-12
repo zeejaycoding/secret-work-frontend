@@ -26,12 +26,14 @@ import {
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors, overlayGradient } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 const ProfileScreen = () => {
   const navigation = useNavigation<any>();
   const { user, signOut, refreshDbUser } = useAuthContext();
   const { primaryColor, accentColor } = useBranding();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const overlays = overlayGradient(isDarkMode);
 
@@ -62,10 +64,10 @@ const ProfileScreen = () => {
   const intensity = Math.min(100, watchMinutes);
 
   const handleSignOut = () => {
-    Alert.alert("Sign out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("signOut"), t("signOutConfirm"), [
+      { text: t("cancel"), style: "cancel" },
       {
-        text: "Sign out",
+        text: t("signOut"),
         style: "destructive",
         onPress: async () => {
           await signOut();
@@ -80,7 +82,7 @@ const ProfileScreen = () => {
   const menuData = [
     {
       id: "2",
-      title: "Subscription plan",
+      title: t("subscriptionPlan"),
       icon: (
         <MaterialCommunityIcons name="credit-card" size={22} color={primaryColor} />
       ),
@@ -88,13 +90,13 @@ const ProfileScreen = () => {
     },
     {
       id: "3",
-      title: "Help & Support",
+      title: t("helpSupport"),
       icon: <Ionicons name="help-circle" size={24} color={primaryColor} />,
       screen: "HelpSupport",
     },
     {
       id: "4",
-      title: "Preferences",
+      title: t("preferences"),
       icon: <Ionicons name="settings" size={22} color={primaryColor} />,
       screen: "Settings",
     },
@@ -168,7 +170,7 @@ const ProfileScreen = () => {
 
           {isPro && (
             <View style={[styles.proMemberTag, { backgroundColor: primaryColor }]}>
-              <Text style={styles.proMemberText}>PRO member</Text>
+              <Text style={styles.proMemberText}>{t("proMember")}</Text>
             </View>
           )}
 
@@ -178,7 +180,7 @@ const ProfileScreen = () => {
             style={styles.editRow}
             onPress={() => navigation.navigate("EditProfileInformation")}
           >
-            <Text style={[styles.editText, { color: accentColor }]}>Edit personal info</Text>
+            <Text style={[styles.editText, { color: accentColor }]}>{t("editPersonalInfo")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -200,10 +202,10 @@ const ProfileScreen = () => {
                     <Text style={styles.proText}>PRO</Text>
                   </View>
 
-                  <Text style={styles.upgradeTitle}>Upgrade to Premium</Text>
+                  <Text style={styles.upgradeTitle}>{t("upgradeToPremium")}</Text>
 
                   <Text style={styles.upgradeSubTitle}>
-                    This subscription is auto-renewable
+                    {t("autoRenewable")}
                   </Text>
                 </View>
 
@@ -218,22 +220,22 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={[styles.statValue, { color: primaryColor }]}>{activeSince}</Text>
-            <Text style={styles.statLabel}>Active Since</Text>
-          </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.statCard}>
+              <Text style={[styles.statValue, { color: primaryColor }]}>{activeSince}</Text>
+              <Text style={styles.statLabel}>{t("activeSince")}</Text>
+            </View>
 
-          <View style={styles.statCard}>
-            <Text style={[styles.statValue, { color: primaryColor }]}>{workoutCount}</Text>
-            <Text style={styles.statLabel}>Workouts</Text>
-          </View>
+            <View style={styles.statCard}>
+              <Text style={[styles.statValue, { color: primaryColor }]}>{workoutCount}</Text>
+              <Text style={styles.statLabel}>{t("workouts")}</Text>
+            </View>
 
-          <View style={styles.statCard}>
-            <Text style={[styles.statValue, { color: primaryColor }]}>{intensity}%</Text>
-            <Text style={styles.statLabel}>Intensity</Text>
+            <View style={styles.statCard}>
+              <Text style={[styles.statValue, { color: primaryColor }]}>{intensity}%</Text>
+              <Text style={styles.statLabel}>{t("intensity")}</Text>
+            </View>
           </View>
-        </View>
 
         {menuData.map((item) => (
           <TouchableOpacity
@@ -253,7 +255,7 @@ const ProfileScreen = () => {
         ))}
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
-          <Text style={[styles.logoutText, { color: primaryColor }]}>Sign out</Text>
+          <Text style={[styles.logoutText, { color: primaryColor }]}>{t("signOut")}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

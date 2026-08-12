@@ -28,18 +28,18 @@ import {
   ChatMessagePayload,
 } from "../../services/socket";
 import { getChatHistory } from "../../services/api";
+import { useLanguage } from "../../i18n";
 
-const options = [
-  "Account",
-  "Earnings",
-  "Gifts",
-  "Bans",
-  "Payments",
-  "Membership",
+const chatOptions = [
+  { key: "chatAccount", label: "Account" },
+  { key: "chatEarnings", label: "Earnings" },
+  { key: "chatGifts", label: "Gifts" },
+  { key: "chatBans", label: "Bans" },
+  { key: "chatPayments", label: "Payments" },
+  { key: "chatMembership", label: "Membership" },
 ];
 
-const welcomeMessage = `Hi there!
-This is Bella from Secret is Work. To expedite resolutions and prioritize your request, kindly select the option below that suits your needs`;
+const welcomeMessageKey = "chatWelcome";
 
 type UiMessage = {
   id: string | number;
@@ -64,6 +64,7 @@ const HelpChat = () => {
   const { user } = useAuthContext();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const [message, setMessage] = useState("");
 
@@ -71,7 +72,7 @@ const HelpChat = () => {
     {
       id: 1,
       type: "receiver",
-      text: welcomeMessage,
+      text: t(welcomeMessageKey),
       time: "08:20 pm",
     },
   ]);
@@ -220,20 +221,20 @@ const HelpChat = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tagsContainer}
           >
-            {options.map((item, index) => (
+            {chatOptions.map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.tagButton}
-                onPress={() => sendText(item)}
+                onPress={() => sendText(item.label)}
               >
-                <Text style={styles.tagText}>{item}</Text>
+                <Text style={styles.tagText}>{t(item.key)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
           <View style={styles.inputContainer}>
             <TextInput
-              placeholder="Type message"
+              placeholder={t("typeMessage")}
               placeholderTextColor={colors.textFaint}
               value={message}
               onChangeText={setMessage}

@@ -53,6 +53,6 @@ export async function savePreferences(
       ...saved,
       notifications: { ...cache.notifications, ...(saved.notifications || {}) },
     };
-  } catch {}
+  } catch { return cache; }
   return cache;
 }

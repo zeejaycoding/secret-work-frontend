@@ -21,12 +21,14 @@ import { getSubscriptionStatus, createPortalSession } from "../../services/api";
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 const AfterSubscribed = () => {
   const navigation = useNavigation<any>();
   const { refreshDbUser } = useAuthContext();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors, isDarkMode);
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<{
@@ -62,7 +64,7 @@ const AfterSubscribed = () => {
         await Linking.openURL(url);
       }
     } catch {
-      Alert.alert("Error", "Could not open subscription management");
+      Alert.alert(t("error"), t("manageSubError"));
     }
   };
 
@@ -79,10 +81,10 @@ const AfterSubscribed = () => {
   const planLabel =
     subscription.label ||
     (subscription.plan === "month"
-      ? "Monthly Pro"
+      ? t("monthlyPro")
       : subscription.plan === "year"
-        ? "Annual Pro"
-        : "Pro");
+        ? t("annualPro")
+        : t("proPlan"));
 
   const formatAmount = (value: number | null) => {
     if (value == null) return null;
@@ -124,7 +126,7 @@ const AfterSubscribed = () => {
           />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>My current plan</Text>
+        <Text style={styles.headerTitle}>{t("myCurrentPlan")}</Text>
       </View>
 
       <View style={styles.centerSection}>
@@ -137,15 +139,15 @@ const AfterSubscribed = () => {
         </View>
 
         <View style={styles.statusRow}>
-          <Text style={styles.statusLabel}>Status: </Text>
-          <Text style={styles.statusActive}>Active</Text>
+          <Text style={styles.statusLabel}>{t("status")}: </Text>
+          <Text style={styles.statusActive}>{t("active")}</Text>
         </View>
 
         <Text style={styles.priceText}>{priceText}</Text>
 
         <View style={styles.subscriptionBadge}>
           <Text style={styles.subscriptionText}>
-            {planLabel} - Renews {formatDate(subscription.expiry)}
+            {planLabel} - {t("renews", { date: formatDate(subscription.expiry) })}
           </Text>
         </View>
 
@@ -155,7 +157,7 @@ const AfterSubscribed = () => {
           onPress={handleManage}
         >
           <Text style={[styles.manageButtonText, { color: primaryColor }]}>
-            Manage Subscription
+            {t("manageSubscription")}
           </Text>
         </TouchableOpacity>
       </View>

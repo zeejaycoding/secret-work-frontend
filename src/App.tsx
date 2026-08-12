@@ -12,6 +12,7 @@ import { ClerkProvider } from "@clerk/clerk-expo";
 import { AuthProvider } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
 import { ThemeProvider, useAppTheme } from "./context/ThemeContext";
+import { LanguageProvider } from "./i18n";
 import { clerkTokenCache } from "./utils/clerkTokenCache";
 import { setupPushNotifications } from "./services/notifications";
 
@@ -234,7 +235,9 @@ export default function App() {
     <AuthProvider>
       <BrandingProvider>
         <ThemeProvider>
-          <AppShell />
+          <LanguageProvider>
+            <AppShell />
+          </LanguageProvider>
         </ThemeProvider>
       </BrandingProvider>
     </AuthProvider>

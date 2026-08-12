@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   StatusBar,
   SafeAreaView,
   Image,
-  Alert,
-  ActivityIndicator,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { moderateScale } from "react-native-size-matters";
@@ -17,52 +15,19 @@ import {
   responsiveHeight,
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
-import { createCheckoutSession, getSubscriptionStatus } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 const BeforeSubscribedPlan = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
-  const [loading, setLoading] = useState(false);
 
-  const handleSubscribe = async () => {
-    setLoading(true);
-    try {
-      const { url } = await createCheckoutSession("monthly");
-      if (url) {
-        const Linking = require("expo-linking");
-        await Linking.openURL(url);
-        pollSubscriptionStatus();
-      }
-    } catch (error: any) {
-      const msg = error?.response?.data?.error || "Failed to start payment. Try again.";
-      Alert.alert("Payment Error", msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const pollSubscriptionStatus = async () => {
-    const maxAttempts = 20;
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      try {
-        const status = await getSubscriptionStatus();
-        if (status.isActive || status.tier === "pro") {
-          navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
-          return;
-        }
-      } catch {
-        // continue polling
-      }
-    }
-    Alert.alert(
-      "Payment Status",
-      "Payment is being processed. Please check your subscription status later."
-    );
+  const handleSubscribe = () => {
+    navigation.navigate("Subscription");
   };
 
   return (
@@ -77,7 +42,7 @@ const BeforeSubscribedPlan = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>My current plan</Text>
+        <Text style={styles.headerTitle}>{t("myCurrentPlan")}</Text>
       </View>
 
       <View style={styles.contentContainer}>
@@ -88,24 +53,15 @@ const BeforeSubscribedPlan = () => {
         />
 
         <Text style={styles.statusText}>
-          Status: <Text style={[styles.inactiveText, { color: primaryColor }]}>Not Active</Text>
+          {t("status")}: <Text style={[styles.inactiveText, { color: primaryColor }]}>{t("notActive")}</Text>
         </Text>
 
         <TouchableOpacity
           activeOpacity={0.8}
-          style={[
-            styles.button,
-            loading && styles.buttonDisabled,
-            { backgroundColor: primaryColor },
-          ]}
+          style={[styles.button, { backgroundColor: primaryColor }]}
           onPress={handleSubscribe}
-          disabled={loading}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.white} size="small" />
-          ) : (
-            <Text style={styles.buttonText}>Subscribe to premium</Text>
-          )}
+            <Text style={styles.buttonText}>{t("subscribeToPremium")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

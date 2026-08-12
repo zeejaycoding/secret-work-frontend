@@ -18,6 +18,9 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { getPros } from "../../services/api";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useIsPro } from "../../utils/subscription";
+import { useLanguage } from "../../i18n";
+import ProPaywall from "../../Components/ProPaywall";
 
 const PRO_PRIORITY = ["latin", "cooper", "corey", "destiny", "jayson"];
 
@@ -31,7 +34,18 @@ const LearnFromPros = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle } = useAppTheme();
   const styles = createStyles(colors);
+  const { t } = useLanguage();
   const [players, setPlayers] = useState<any[]>([]);
+  const isPro = useIsPro();
+
+  if (!isPro) {
+    return (
+      <ProPaywall
+        title={t("learnProsProTitle")}
+        subtitle={t("learnProsProDesc")}
+      />
+    );
+  }
 
   useEffect(() => {
     getPros()
@@ -88,12 +102,9 @@ const LearnFromPros = () => {
           </View>
 
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Learn from the pros</Text>
+            <Text style={styles.title}>{t("learnFromPros")}</Text>
 
-            <Text style={styles.description}>
-              Learn real game techniques, smart decisions, and pro-level
-              training habits.
-            </Text>
+            <Text style={styles.description}>{t("learnProsDesc")}</Text>
           </View>
 
           <View style={styles.cardsWrapper}>

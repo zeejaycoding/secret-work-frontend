@@ -16,6 +16,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 import { getUnreadNotificationCount } from "../../services/api";
 import { connectSocket, onNotificationNew } from "../../services/socket";
 
@@ -25,6 +26,7 @@ const Header = () => {
   const { primaryColor, tagline } = useBranding();
   const { colors, isDarkMode } = useAppTheme();
   const styles = createStyles(colors);
+  const { t } = useLanguage();
   const [unread, setUnread] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -75,7 +77,7 @@ const Header = () => {
         <Image source={require("../../assets/user.png")} style={styles.image} />
 
         <View>
-          <Text style={styles.title}>Hey {displayName}</Text>
+          <Text style={styles.title}>{t("hey", { name: displayName })}</Text>
           <Text style={[styles.subtitle, { color: isDarkMode ? colors.textMuted : "#000000" }]}>{tagline}</Text>
         </View>
       </View>

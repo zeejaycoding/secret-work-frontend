@@ -27,6 +27,9 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { getWorkout, getFollowStatus, toggleFollow } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage, translateCategory } from "../../i18n";
+import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const fallbackTabs = [
   "Ball Handling",
@@ -111,10 +114,30 @@ const formatCount = (n: number) => {
   return String(n);
 };
 
+const STAT_LABEL_KEYS: Record<string, string> = {
+  Followers: "statFollowers",
+  Videos: "statVideos",
+  "Years of Exp": "statYearsExp",
+};
+
+const statLabelKey = (label: string) => STAT_LABEL_KEYS[label] || label;
+
 const WorkoutProfileDetail = () => {
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors, isDarkMode);
+  const isPro = useIsPro();
+
+  if (!isPro) {
+    return (
+      <ProPaywall
+        title={t("workoutProTitle")}
+        subtitle={t("workoutProDesc")}
+      />
+    );
+  }
+
   const [activeTab, setActiveTab] = useState(fallbackTabs[0]);
   const [tabs, setTabs] = useState(fallbackTabs);
   const navigation = useNavigation<any>();
@@ -228,7 +251,9 @@ const WorkoutProfileDetail = () => {
             {item.title}
           </Text>
 
-          <Text style={styles.videoCategory}>{item.category}</Text>
+          <Text style={styles.videoCategory}>
+            {translateCategory(t, item.category)}
+          </Text>
 
           <View style={styles.videoBottomRow}>
             <View style={styles.infoRow}>
@@ -325,7 +350,7 @@ const WorkoutProfileDetail = () => {
             />
 
             <Text style={styles.followText}>
-              {following ? "Following" : "Follow"}
+              {following ? t("following") : t("follow")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -344,14 +369,14 @@ const WorkoutProfileDetail = () => {
 
                 <Text style={styles.statValue}>{item.value}</Text>
 
-                <Text style={styles.statLabel}>{item.label}</Text>
+                <Text style={styles.statLabel}>{t(statLabelKey(item.label))}</Text>
               </View>
             );
           })}
         </View>
 
         <View style={styles.descriptionCard}>
-          <Text style={styles.descriptionTitle}>Description</Text>
+          <Text style={styles.descriptionTitle}>{t("description")}</Text>
 
           <Text style={styles.descriptionText}>
             {description}
@@ -359,7 +384,7 @@ const WorkoutProfileDetail = () => {
         </View>
 
         <View style={styles.videoSection}>
-          <Text style={styles.videoHeading}>Video</Text>
+          <Text style={styles.videoHeading}>{t("video")}</Text>
 
           <ScrollView
             horizontal
@@ -380,11 +405,11 @@ const WorkoutProfileDetail = () => {
                     isActive && { backgroundColor: primaryColor },
                   ]}
                 >
-                  <Text
-                    style={[styles.tabText, isActive && styles.activeTabText]}
-                  >
-                    {tab}
-                  </Text>
+                   <Text
+                     style={[styles.tabText, isActive && styles.activeTabText]}
+                   >
+                     {translateCategory(t, tab)}
+                   </Text>
                 </TouchableOpacity>
               );
             })}

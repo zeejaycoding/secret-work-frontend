@@ -10,12 +10,16 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../../context/ThemeContext";
+import { useIsPro } from "../../../utils/subscription";
+import { useLanguage } from "../../../i18n";
 
 const LearnCard = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, isDarkMode } = useAppTheme();
   const styles = createStyles(colors);
+  const isPro = useIsPro();
+  const { t } = useLanguage();
   const gradientColors = (
     isDarkMode
       ? [
@@ -44,7 +48,11 @@ const LearnCard = () => {
         style={styles.gradientBackground}
       />
 
-      <TouchableOpacity onPress={() => navigation.navigate("LearnPros")}>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate(isPro ? "LearnPros" : "Subscription")
+        }
+      >
         <View style={styles.learnContent}>
           <View style={styles.learnLeft}>
             <View style={styles.iconContainer}>
@@ -56,7 +64,7 @@ const LearnCard = () => {
             </View>
 
             <View style={styles.textContainer}>
-              <Text style={styles.learnTitle}>Learn from the pros</Text>
+              <Text style={styles.learnTitle}>{t("learnFromPros")}</Text>
 
               <Text
                 style={[styles.learnDesc, { color: isDarkMode ? "#E79B9B" : "#9B3340" }]}

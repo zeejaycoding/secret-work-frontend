@@ -27,11 +27,13 @@ import api, { socialLogin } from "../services/api";
 import { useAuthContext } from "../context/AuthContext";
 import { useBranding } from "../context/BrandingContext";
 import { useAppTheme, ThemeColors, overlayGradient } from "../context/ThemeContext";
+import { useLanguage } from "../i18n";
 
 const SignupScreen = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const overlays = overlayGradient(isDarkMode);
   const [email, setEmail] = useState("");
@@ -116,7 +118,7 @@ const SignupScreen = () => {
 
   const handleEmailSignUp = async () => {
     if (!email.trim()) {
-      Alert.alert("Email required", "Please enter your email address");
+      Alert.alert(t("emailRequired"), t("enterEmailPrompt"));
       return;
     }
     setIsLoading(true);
@@ -127,7 +129,7 @@ const SignupScreen = () => {
       navigation.navigate("IntroVideo");
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || "Something went wrong";
-      Alert.alert("Sign up failed", msg);
+      Alert.alert(t("signupFailed"), msg);
     } finally {
       setIsLoading(false);
     }
@@ -208,11 +210,9 @@ const SignupScreen = () => {
                   style={styles.logo}
                 />
 
-                <Text style={styles.title}>Let’s Get Started</Text>
+                <Text style={styles.title}>{t("getStarted")}</Text>
 
-                <Text style={styles.description}>
-                  It only takes a minute to set up your training profile
-                </Text>
+                <Text style={styles.description}>{t("signupDesc")}</Text>
               </View>
 
               <View style={styles.formContainer}>
@@ -224,7 +224,7 @@ const SignupScreen = () => {
                   />
 
                   <TextInput
-                     placeholder="Enter your email address"
+                     placeholder={t("enterEmail")}
                      placeholderTextColor={colors.textMuted}
                      style={styles.input}
                      value={email}
@@ -241,13 +241,13 @@ const SignupScreen = () => {
                   {isLoading ? (
                     <ActivityIndicator color={colors.white} size="small" />
                   ) : (
-                    <Text style={styles.signInText}>Sign up</Text>
+                    <Text style={styles.signInText}>{t("signup")}</Text>
                   )}
                 </TouchableOpacity>
 
                 <View style={styles.orContainer}>
                   <View style={styles.line} />
-                  <Text style={styles.orText}>Or continue with</Text>
+                  <Text style={styles.orText}>{t("orContinueWith")}</Text>
                   <View style={styles.line} />
                 </View>
 
@@ -267,7 +267,7 @@ const SignupScreen = () => {
                     style={styles.socialIcon}
                   />
 
-                  <Text style={styles.socialText}>Continue with google</Text>
+                  <Text style={styles.socialText}>{t("continueGoogle")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -288,7 +288,7 @@ const SignupScreen = () => {
                     style={styles.socialIcon}
                   />
 
-                  <Text style={styles.socialText}>Continue with facebook</Text>
+                  <Text style={styles.socialText}>{t("continueFacebook")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -310,21 +310,21 @@ const SignupScreen = () => {
                     style={styles.appleIcon}
                   />
 
-                  <Text style={styles.socialText}>Continue with apple</Text>
+                  <Text style={styles.socialText}>{t("continueApple")}</Text>
                     </>
                   )}
                 </TouchableOpacity>
 
                 <View style={styles.signupContainer}>
                   <Text style={styles.accountText}>
-                    Already have an account?{" "}
+                    {t("haveAccount")}{" "}
                   </Text>
 
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => navigation.navigate("Signin")}
                   >
-                    <Text style={styles.signupText}>Sign in</Text>
+                    <Text style={styles.signupText}>{t("signin")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

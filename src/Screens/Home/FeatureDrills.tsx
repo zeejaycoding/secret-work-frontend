@@ -17,6 +17,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { getDrills } from "../../services/api";
+import { useIsPro } from "../../utils/subscription";
+import { useLanguage } from "../../i18n";
 
 const fallbackCategories = [
   "Ball handling",
@@ -146,6 +148,7 @@ const toCardShape = (drill: any) => ({
   description: drill.description || "",
   videoUrl: drill.videoUrl || "",
   views: drill.views || 0,
+  proId: drill.proId || null,
 });
 
 const FeatureDrills = () => {
@@ -155,6 +158,8 @@ const FeatureDrills = () => {
   const [drillsData, setDrillsData] = useState(fallbackDrillsData);
   const { primaryColor } = useBranding();
   const { colors } = useAppTheme();
+  const isPro = useIsPro();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
   useEffect(() => {
@@ -167,6 +172,8 @@ const FeatureDrills = () => {
         const grouped: any = {};
 
         for (const drill of drills) {
+          if (!isPro && drill.proId) continue;
+
           const cat = categoryLabel(drill.category || "Other");
 
           if (!grouped[cat]) grouped[cat] = [];
@@ -204,13 +211,13 @@ const FeatureDrills = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Featured Drills</Text>
+        <Text style={styles.heading}>{t("featuredDrills")}</Text>
 
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.navigate("Drills")}
         >
-          <Text style={[styles.seeAll, { color: primaryColor }]}>See All</Text>
+          <Text style={[styles.seeAll, { color: primaryColor }]}>{t("seeAll")}</Text>
         </TouchableOpacity>
       </View>
 

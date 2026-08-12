@@ -14,9 +14,10 @@ import {
   responsiveWidth,
 } from "react-native-responsive-dimensions";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { loadPreferences, savePreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
+import { loadPreferences } from "../../services/preferences";
 
 const languageData = [
   "English",
@@ -31,18 +32,22 @@ const Languages = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { languageName, setLanguage, t } = useLanguage();
   const styles = createStyles(colors);
-  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [selectedLanguage, setSelectedLanguage] = useState(languageName);
 
   useFocusEffect(
     useCallback(() => {
-      loadPreferences().then((prefs) => setSelectedLanguage(prefs.language));
-    }, [])
+      loadPreferences().then((prefs) => {
+        setSelectedLanguage(prefs.language);
+        setLanguage(prefs.language);
+      });
+    }, [setLanguage])
   );
 
   const handleSelect = (item: string) => {
     setSelectedLanguage(item);
-    savePreferences({ language: item });
+    setLanguage(item);
   };
 
   return (
@@ -58,7 +63,7 @@ const Languages = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Language</Text>
+        <Text style={styles.headerTitle}>{t("language")}</Text>
       </View>
 
       <View style={styles.languageContainer}>

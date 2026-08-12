@@ -16,56 +16,28 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 type FAQItem = {
   id: string;
-  question: string;
-  answer: string;
+  questionKey: string;
+  answerKey: string;
 };
 
 const faqData: FAQItem[] = [
-  {
-    id: "1",
-    question: "How do I start a workout?",
-    answer:
-      "Yes. A premium subscription gives you unlimited access to all drills, guided workouts, and exclusive training content. Some preview content may be available, but full access requires an active subscription.",
-  },
-  {
-    id: "2",
-    question: "Do I need a subscription to access drills?",
-    answer:
-      "Some drills are free, but premium content requires an active subscription plan.",
-  },
-  {
-    id: "3",
-    question: "Can I download videos for offline use?",
-    answer:
-      "Yes, premium users can download selected videos and watch them offline anytime.",
-  },
-  {
-    id: "4",
-    question: "How often are new drills added?",
-    answer:
-      "New drills and workouts are added every week to keep your training updated.",
-  },
-  {
-    id: "5",
-    question: "Can beginners use this app?",
-    answer:
-      "Absolutely. The app includes beginner-friendly workouts and step-by-step guidance.",
-  },
-  {
-    id: "6",
-    question: "How do I reset my password?",
-    answer:
-      "Go to settings, tap on 'Forgot Password', and follow the instructions sent to your email.",
-  },
+  { id: "1", questionKey: "faq1q", answerKey: "faq1a" },
+  { id: "2", questionKey: "faq2q", answerKey: "faq2a" },
+  { id: "3", questionKey: "faq3q", answerKey: "faq3a" },
+  { id: "4", questionKey: "faq4q", answerKey: "faq4a" },
+  { id: "5", questionKey: "faq5q", answerKey: "faq5a" },
+  { id: "6", questionKey: "faq6q", answerKey: "faq6a" },
 ];
 
 const HelpSupport = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const [expandedId, setExpandedId] = useState<string | null>("1");
 
@@ -93,14 +65,12 @@ const HelpSupport = () => {
             />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Help & Support</Text>
+          <Text style={styles.headerTitle}>{t("helpSupport")}</Text>
         </View>
         <View style={styles.helpCard}>
-          <Text style={styles.helpTitle}>How can we help you?</Text>
+          <Text style={styles.helpTitle}>{t("helpTitle")}</Text>
 
-          <Text style={styles.helpSubtitle}>
-            Find answers to the most commonly asked questions
-          </Text>
+          <Text style={styles.helpSubtitle}>{t("helpSubtitle")}</Text>
         </View>
 
         <View style={styles.faqContainer}>
@@ -114,7 +84,7 @@ const HelpSupport = () => {
                   style={styles.questionRow}
                   onPress={() => toggleItem(item.id)}
                 >
-                  <Text style={styles.questionText}>{item.question}</Text>
+                  <Text style={styles.questionText}>{t(item.questionKey)}</Text>
 
                   <Ionicons
                     name={isExpanded ? "remove" : "add"}
@@ -124,7 +94,7 @@ const HelpSupport = () => {
                 </TouchableOpacity>
 
                 {isExpanded && (
-                  <Text style={styles.answerText}>{item.answer}</Text>
+                  <Text style={styles.answerText}>{t(item.answerKey)}</Text>
                 )}
 
                 {item.id !== faqData[faqData.length - 1].id && (

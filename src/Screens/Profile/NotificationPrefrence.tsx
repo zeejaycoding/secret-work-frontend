@@ -29,6 +29,7 @@ import {
 import { useBranding } from "../../context/BrandingContext";
 import { getCachedNotificationPrefs } from "../../services/branding";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 type NotificationItemProps = {
   title: string;
@@ -41,18 +42,18 @@ type NotificationItemProps = {
 const notificationData = [
   {
     id: "1",
-    title: "Push notifications",
-    subtitle: "Choose what notifications you receive",
+    titleKey: "pushNotifTitle",
+    subtitleKey: "pushNotifSub",
   },
   {
     id: "2",
-    title: "Email notifications",
-    subtitle: "Get important updates sent to your email",
+    titleKey: "emailNotifTitle",
+    subtitleKey: "emailNotifSub",
   },
   {
     id: "3",
-    title: "In-app notifications",
-    subtitle: "Manage what alerts you see while using the app",
+    titleKey: "inAppNotifTitle",
+    subtitleKey: "inAppNotifSub",
   },
 ];
 
@@ -117,18 +118,19 @@ const NotificationPrefrence = () => {
   const navigation = useNavigation<any>();
   const { notifPrefs: globalPrefs, accentColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
 
-  const [pushNotification, setPushNotification] = useState(true);
-  const [emailNotification, setEmailNotification] = useState(true);
-  const [inAppNotification, setInAppNotification] = useState(true);
+  const [pushNotification, setPushNotification] = useState(false);
+  const [emailNotification, setEmailNotification] = useState(false);
+  const [inAppNotification, setInAppNotification] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       loadPreferences().then((prefs) => {
-        setPushNotification(prefs.notifications.push);
-        setEmailNotification(prefs.notifications.email);
-        setInAppNotification(prefs.notifications.inApp);
+        setPushNotification(prefs.notifications.push ?? true);
+        setEmailNotification(prefs.notifications.email ?? true);
+        setInAppNotification(prefs.notifications.inApp ?? true);
       });
     }, [])
   );
@@ -136,6 +138,11 @@ const NotificationPrefrence = () => {
   const handleToggle = (key: "push" | "email" | "inApp", value: boolean) => {
     savePreferences({
       notifications: { ...getCachedPreferences().notifications, [key]: value },
+    });
+    loadPreferences().then((prefs) => {
+      if (key === "push") setPushNotification(prefs.notifications.push ?? true);
+      if (key === "email") setEmailNotification(prefs.notifications.email ?? true);
+      if (key === "inApp") setInAppNotification(prefs.notifications.inApp ?? true);
     });
   };
 
@@ -158,14 +165,14 @@ const NotificationPrefrence = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Notification preferences</Text>
+        <Text style={styles.headerTitle}>{t("notifPreferences")}</Text>
       </View>
 
       {/* List */}
       <View style={styles.listContainer}>
         <NotificationItem
-          title={notificationData[0].title}
-          subtitle={notificationData[0].subtitle}
+          title={t(notificationData[0].titleKey)}
+          subtitle={t(notificationData[0].subtitleKey)}
           value={pushNotification}
           disabled={pushDisabled}
           onToggle={(value) => {
@@ -175,8 +182,8 @@ const NotificationPrefrence = () => {
         />
 
         <NotificationItem
-          title={notificationData[1].title}
-          subtitle={notificationData[1].subtitle}
+          title={t(notificationData[1].titleKey)}
+          subtitle={t(notificationData[1].subtitleKey)}
           value={emailNotification}
           disabled={emailDisabled}
           onToggle={(value) => {
@@ -186,8 +193,8 @@ const NotificationPrefrence = () => {
         />
 
         <NotificationItem
-          title={notificationData[2].title}
-          subtitle={notificationData[2].subtitle}
+          title={t(notificationData[2].titleKey)}
+          subtitle={t(notificationData[2].subtitleKey)}
           value={inAppNotification}
           disabled={inAppDisabled}
           onToggle={(value) => {

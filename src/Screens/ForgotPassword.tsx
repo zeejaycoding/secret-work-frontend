@@ -23,10 +23,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import api from "../services/api";
 import { useAppTheme, ThemeColors, overlayGradient } from "../context/ThemeContext";
+import { useLanguage } from "../i18n";
 
 const ForgotPassword = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const overlays = overlayGradient(isDarkMode);
   const [email, setEmail] = useState("");
@@ -36,7 +38,7 @@ const ForgotPassword = () => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      Alert.alert("Email required", "Please enter your email address");
+      Alert.alert(t("emailRequired"), t("enterEmailPrompt"));
       return;
     }
 
@@ -48,7 +50,7 @@ const ForgotPassword = () => {
       const message =
         err?.response?.data?.error ||
         "Unable to send verification code. Please try again.";
-      Alert.alert("Request failed", message);
+      Alert.alert(t("requestFailed"), message);
     } finally {
       setIsSubmitting(false);
     }
@@ -129,12 +131,9 @@ const ForgotPassword = () => {
                   style={styles.logo}
                 />
 
-                <Text style={styles.title}>Forgot password</Text>
+                <Text style={styles.title}>{t("forgotPassword")}</Text>
 
-                <Text style={styles.description}>
-                  Enter your email and we’ll send you a link to get back into
-                  your account.
-                </Text>
+                <Text style={styles.description}>{t("forgotDesc")}</Text>
               </View>
 
               <View style={styles.formContainer}>
@@ -146,7 +145,7 @@ const ForgotPassword = () => {
                   />
 
                   <TextInput
-                     placeholder="Enter your email address"
+                     placeholder={t("enterEmail")}
                      placeholderTextColor={colors.textMuted}
                      style={styles.input}
                      value={email}
@@ -160,7 +159,7 @@ const ForgotPassword = () => {
                   onPress={handleSendOtp}
                   disabled={isSubmitting}
                 >
-                  <Text style={styles.signInText}>Verify code</Text>
+                    <Text style={styles.signInText}>{t("verifyCode")}</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -20,11 +20,15 @@ import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { getPodcasts, getPros } from "../../services/api";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
+import { useIsPro } from "../../utils/subscription";
 
 const PodcastsScreen = () => {
   const navigation = useNavigation<any>();
   const { colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
+  const isPro = useIsPro();
 
   const [trendingData, setTrendingData] = useState<any[]>([]);
   const [learnData, setLearnData] = useState<any[]>([]);
@@ -48,20 +52,22 @@ const PodcastsScreen = () => {
             id: p._id,
             title: p.title,
             author: p.host,
-            category: p.guest ? `Guest: ${p.guest}` : p.type,
+            category: p.guest ? t("guest", { name: p.guest }) : p.type,
             image: p.imageUrl || require("../../assets/podone.png"),
             micImage: require("../../assets/mic.png"),
             overlay: ["rgba(54,255,124,0.75)", "rgba(0,180,90,0.65)"],
           }))
         );
         setLearnData(
-          proPodcasts.map((p) => ({
-            id: p._id,
-            title: p.title,
-            author: p.guest || p.host,
-            duration: p.duration,
-            image: p.imageUrl || require("../../assets/mode2.jpg"),
-          }))
+          isPro
+            ? proPodcasts.map((p) => ({
+                id: p._id,
+                title: p.title,
+                author: p.guest || p.host,
+                duration: p.duration,
+                image: p.imageUrl || require("../../assets/mode2.jpg"),
+              }))
+            : []
         );
       })
       .catch(() => {
@@ -151,17 +157,15 @@ const PodcastsScreen = () => {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.headerContainer}>
-          <Text style={styles.heading}>Podcast</Text>
+          <Text style={styles.heading}>{t("podcastHeading")}</Text>
 
-          <Text style={styles.subHeading}>
-            Listen to real conversations and insights
-          </Text>
+          <Text style={styles.subHeading}>{t("podcastSub")}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Trending now</Text>
+        <Text style={styles.sectionTitle}>{t("trendingNow")}</Text>
 
         {trendingData.length === 0 && (
-          <Text style={styles.emptyText}>No episodes yet</Text>
+          <Text style={styles.emptyText}>{t("noEpisodes")}</Text>
         )}
 
         <ScrollView
@@ -233,7 +237,7 @@ const PodcastsScreen = () => {
         {learnData.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { marginTop: moderateScale(18) }]}>
-              Learn from the pros
+              {t("learnFromPros")}
             </Text>
 
             <View style={styles.learnContainer}>
@@ -253,7 +257,9 @@ const PodcastsScreen = () => {
                       {item.title}
                     </Text>
 
-                    <Text style={styles.learnAuthor}>By {item.author}</Text>
+                    <Text style={styles.learnAuthor}>
+                      {t("byAuthor", { name: item.author })}
+                    </Text>
 
                     <View style={styles.durationRow}>
                       <MaterialCommunityIcons

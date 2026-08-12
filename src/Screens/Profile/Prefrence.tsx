@@ -19,6 +19,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { loadPreferences } from "../../services/preferences";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 type prefrenceItemProps = {
   title: string;
@@ -33,20 +34,20 @@ type prefrenceItemProps = {
 const prefrenceData = [
   {
     id: "1",
-    title: "Dark mode",
+    titleKey: "darkMode",
     image: require("../../assets/theme.png"),
     isDarkMode: true,
   },
   {
     id: "2",
-    title: "Language",
+    titleKey: "language",
     image: require("../../assets/lang.png"),
     screen: "Language",
     language: "English",
   },
   {
     id: "3",
-    title: "Notification preferences",
+    titleKey: "notifPreferences",
     image: require("../../assets/noti.png"),
     screen: "NotificationPrefrence",
   },
@@ -133,6 +134,7 @@ const PrefrenceItem = ({
 const Prefrence = () => {
   const navigation = useNavigation<any>();
   const { isDarkMode, setDarkMode, colors, statusBarStyle } = useAppTheme();
+  const { t } = useLanguage();
   const [language, setLanguage] = useState("English");
 
   useFocusEffect(
@@ -162,15 +164,15 @@ const Prefrence = () => {
           <Ionicons name="chevron-back" size={moderateScale(22)} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>App preference</Text>
+        <Text style={styles.headerTitle}>{t("appPreference")}</Text>
       </View>
 
       <View style={styles.listContainer}>
         {prefrenceData.map((item) => (
-          <PrefrenceItem
-            key={item.id}
-            title={item.title}
-            image={item.image}
+            <PrefrenceItem
+              key={item.id}
+              title={t(item.titleKey)}
+              image={item.image}
             language={language}
             isDarkMode={item.isDarkMode}
             darkModeValue={isDarkMode}

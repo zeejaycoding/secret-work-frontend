@@ -22,6 +22,12 @@ import FilterModal from "./FilterModal";
 import { getDrills } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import {
+  useLanguage,
+  translateCategory,
+  translateLevel,
+} from "../../i18n";
+import { useIsPro } from "../../utils/subscription";
 
 const fallbackDrillsData = [
   {
@@ -99,11 +105,13 @@ const toCardShape = (drill: any) => ({
     : require("../../assets/mode2.jpg"),
   description: drill.description,
   videoUrl: drill.videoUrl,
+  proId: drill.proId || null,
 });
 
 const DrillCard = ({ item }: any) => {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors, isDarkMode);
 
   return (
@@ -137,7 +145,7 @@ const DrillCard = ({ item }: any) => {
           </View>
 
           <View style={styles.levelBadge}>
-            <Text style={styles.levelText}>{item.level}</Text>
+            <Text style={styles.levelText}>{translateLevel(t, item.level)}</Text>
           </View>
         </View>
 
@@ -146,7 +154,9 @@ const DrillCard = ({ item }: any) => {
             {item.title}
           </Text>
 
-          <Text style={styles.cardCategory}>{item.category}</Text>
+          <Text style={styles.cardCategory}>
+            {translateCategory(t, item.category)}
+          </Text>
         </View>
       </ImageBackground>
     </TouchableOpacity>
@@ -156,7 +166,9 @@ const DrillCard = ({ item }: any) => {
 const DrilLibraryMainScreen = ({ route }: any) => {
   const { primaryColor } = useBranding();
   const { colors, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors, isDarkMode);
+  const isPro = useIsPro();
   const [selectedCategory, setSelectedCategory] = useState(
     route?.params?.category || "All"
   );
@@ -177,7 +189,10 @@ const DrilLibraryMainScreen = ({ route }: any) => {
     getDrills()
       .then((drills) => {
         if (mounted && Array.isArray(drills)) {
-          setDrillsData(drills.map(toCardShape));
+          const shaped = drills
+            .map(toCardShape)
+            .filter((d) => isPro || !d.proId);
+          setDrillsData(shaped);
 
           const distinct = Array.from(
             new Set(
@@ -274,13 +289,13 @@ const DrilLibraryMainScreen = ({ route }: any) => {
       >
         <View style={styles.header}>
           <Text style={styles.heading}>
-            Drill{" "}
-            <Text style={[styles.redText, { color: primaryColor }]}>Library</Text>
+            {t("drillWord")}{" "}
+            <Text style={[styles.redText, { color: primaryColor }]}>
+              {t("library")}
+            </Text>
           </Text>
 
-          <Text style={styles.subHeading}>
-            Every drill. Every level. Pick your battle.
-          </Text>
+          <Text style={styles.subHeading}>{t("drillLibrarySub")}</Text>
         </View>
 
         <View style={styles.searchContainer}>
@@ -288,7 +303,7 @@ const DrilLibraryMainScreen = ({ route }: any) => {
             <Ionicons name="search" size={moderateScale(18)} color={colors.textSecondary} />
 
             <TextInput
-              placeholder="Search"
+              placeholder={t("search")}
               placeholderTextColor={colors.switchTrack}
               style={styles.input}
               value={searchText}
@@ -339,7 +354,7 @@ const DrilLibraryMainScreen = ({ route }: any) => {
                     isActive && styles.activeCategoryText,
                   ]}
                 >
-                  {item}
+                  {item === "All" ? t("all") : translateCategory(t, item)}
                 </Text>
               </TouchableOpacity>
             );

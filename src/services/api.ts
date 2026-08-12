@@ -296,9 +296,39 @@ export async function setPassword(password: string) {
   return data;
 }
 
-export async function createCheckoutSession(plan: "monthly" | "annually") {
-  const { data } = await api.post("/payments/checkout", { plan });
+export async function createCheckoutSession(plan: "monthly" | "annually", discountCode?: string) {
+  const payload: any = { plan };
+  if (discountCode) {
+    payload.discountCode = discountCode;
+  }
+  const { data } = await api.post("/payments/checkout", payload);
   return data;
+}
+
+export interface DiscountValidation {
+  valid: boolean;
+  code?: string;
+  discountAmount?: number;
+  message?: string;
+  error?: string;
+}
+
+export async function validateDiscountCode(
+  code: string,
+  plan: string
+): Promise<DiscountValidation> {
+  try {
+    const { data } = await api.post("/payments/discount/validate", {
+      code,
+      plan,
+    });
+    return data as DiscountValidation;
+  } catch (error: any) {
+    return {
+      valid: false,
+      message: error.response?.data?.message || error.response?.data?.error || "Validation failed",
+    };
+  }
 }
 
 export interface SubscriptionStatus {

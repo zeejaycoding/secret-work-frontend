@@ -23,11 +23,13 @@ import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import api from "../services/api";
 import { useAppTheme, ThemeColors, overlayGradient } from "../context/ThemeContext";
+import { useLanguage } from "../i18n";
 
 const OTPVerification = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const overlays = overlayGradient(isDarkMode);
   const email = route?.params?.email;
@@ -62,13 +64,13 @@ const OTPVerification = () => {
 
   const handleVerifyOtp = async () => {
     if (!email) {
-      Alert.alert("Session expired", "Please start again from Forgot password");
+      Alert.alert(t("sessionExpired"), t("startFromForgot"));
       navigation.navigate("ForgotPassword");
       return;
     }
 
     if (!isOtpComplete) {
-      Alert.alert("Code required", "Please enter the complete verification code");
+      Alert.alert(t("codeRequired"), t("enterCompleteCode"));
       return;
     }
 
@@ -87,7 +89,7 @@ const OTPVerification = () => {
       });
     } catch (err: any) {
       const message = err?.response?.data?.error || "Failed to verify code";
-      Alert.alert("Verification failed", message);
+      Alert.alert(t("verificationFailed"), message);
     } finally {
       setIsVerifying(false);
     }
@@ -95,7 +97,7 @@ const OTPVerification = () => {
 
   const handleResend = async () => {
     if (!email) {
-      Alert.alert("Session expired", "Please start again from Forgot password");
+      Alert.alert(t("sessionExpired"), t("startFromForgot"));
       navigation.navigate("ForgotPassword");
       return;
     }
@@ -103,12 +105,12 @@ const OTPVerification = () => {
     try {
       setIsResending(true);
       await api.post("/auth/forgot-password", { email });
-      Alert.alert("Code sent", "A new verification code has been sent");
+      Alert.alert(t("codeSent"), t("newCodeSent"));
       setOtp(["", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } catch (err: any) {
       const message = err?.response?.data?.error || "Failed to resend code";
-      Alert.alert("Resend failed", message);
+      Alert.alert(t("resendFailed"), message);
     } finally {
       setIsResending(false);
     }
@@ -187,11 +189,9 @@ const OTPVerification = () => {
               resizeMode="contain"
             />
 
-            <Text style={styles.heading}>OTP Verification</Text>
+            <Text style={styles.heading}>{t("otpVerification")}</Text>
 
-            <Text style={styles.subHeading}>
-              Enter the code we sent to confirm if it’s you
-            </Text>
+            <Text style={styles.subHeading}>{t("otpSub")}</Text>
 
             <View style={styles.otpContainer}>
               {otp.map((item, index) => (
@@ -248,19 +248,19 @@ const OTPVerification = () => {
                   },
                 ]}
               >
-                Verify code
+                {t("verifyCode")}
               </Text>
             </TouchableOpacity>
 
             <View style={styles.resendContainer}>
-              <Text style={styles.didntText}>Didn’t see code?</Text>
+              <Text style={styles.didntText}>{t("didntSeeCode")}</Text>
 
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleResend}
                 disabled={isResending}
               >
-                <Text style={styles.resendText}> Resend</Text>
+                <Text style={styles.resendText}>{t("resend")}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

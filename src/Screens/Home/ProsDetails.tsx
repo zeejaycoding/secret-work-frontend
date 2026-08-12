@@ -21,17 +21,20 @@ import { useNavigation } from "@react-navigation/native";
 import { reportWatchTime, getWorkout } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useIsPro } from "../../utils/subscription";
+import { useLanguage, translateCategory, translateLevel } from "../../i18n";
+import ProPaywall from "../../Components/ProPaywall";
 
 const categoryLabel = (category: string) => {
   if (category === "Defence") return "Defense";
   return category;
 };
 
-const toLessonShape = (drill: any) => ({
+const toLessonShape = (t: (key: string) => string, drill: any) => ({
   id: drill._id || drill.id,
   title: drill.title || "",
-  subtitle: `${categoryLabel(drill.category || "Drill")}${
-    drill.level ? `, ${drill.level}` : ""
+  subtitle: `${translateCategory(t, categoryLabel(drill.category || "Drill"))}${
+    drill.level ? `, ${translateLevel(t, drill.level)}` : ""
   }`,
   duration: drill.duration || "20 secs",
   reps: drill.reps || "5 Reps",
@@ -49,8 +52,19 @@ const ProsDetails = ({ route }: any) => {
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle, isDarkMode } = useAppTheme();
   const styles = createStyles(colors, isDarkMode);
+  const { t } = useLanguage();
   const videoRef = useRef<Video>(null);
   const pro = route?.params?.pro;
+  const isPro = useIsPro();
+
+  if (!isPro) {
+    return (
+      <ProPaywall
+        title={t("prosProTitle")}
+        subtitle={t("prosProDesc")}
+      />
+    );
+  }
 
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -83,7 +97,7 @@ const ProsDetails = ({ route }: any) => {
     const applyVideos = (videos: any[]) => {
       const mapped = videos
         .filter((v) => v && v.title)
-        .map(toLessonShape);
+        .map((v) => toLessonShape(t, v));
 
       const cats = Array.from(
         new Set(mapped.map((m: any) => m.category).filter(Boolean))

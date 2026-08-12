@@ -16,6 +16,7 @@ import { moderateScale } from "react-native-size-matters";
 import { useNavigation } from "@react-navigation/native";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage, translateCategory } from "../../i18n";
 import { getDrills } from "../../services/api";
 
 interface SkillItemProps {
@@ -56,6 +57,7 @@ const TrainSkills = () => {
   const navigation = useNavigation<any>();
   const { primaryColor } = useBranding();
   const { colors } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const [skillsData, setSkillsData] = useState<SkillItemProps[]>(
     fallbackSkillsData
@@ -101,13 +103,13 @@ const TrainSkills = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Train by skills</Text>
+        <Text style={styles.heading}>{t("trainBySkills")}</Text>
 
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.navigate("Drills")}
         >
-          <Text style={[styles.seeAll, { color: primaryColor }]}>See All</Text>
+          <Text style={[styles.seeAll, { color: primaryColor }]}>{t("seeAll")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -164,7 +166,9 @@ const TrainSkills = () => {
               style={styles.bottomOverlay}
             />
 
-            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardTitle}>
+              {translateCategory(t, item.title)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>

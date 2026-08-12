@@ -18,6 +18,7 @@ import {
 } from "react-native-responsive-dimensions";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useLanguage } from "../../i18n";
 
 interface FilterState {
   skill: string;
@@ -25,6 +26,29 @@ interface FilterState {
   duration: string;
   goal: string;
 }
+
+const OPTION_KEYS: Record<string, string> = {
+  Dribbling: "catDribbling",
+  Shooting: "catShooting",
+  Passing: "catPassing",
+  Finishing: "catFinishing",
+  Conditioning: "catConditioning",
+  Beginner: "levelBeginner",
+  Intermediate: "levelIntermediate",
+  Advanced: "levelAdvanced",
+  All: "all",
+  "Under 5 mins": "durUnder5",
+  "5–10 mins": "dur5to10",
+  "10–20 mins": "dur10to20",
+  "20+ mins": "dur20plus",
+  "Improve Handles": "goalHandles",
+  "Increase Speed": "goalSpeed",
+  "Shooting Accuracy": "goalShooting",
+  Stamina: "goalStamina",
+  "Court Awareness": "goalAwareness",
+};
+
+const optionKey = (value: string) => OPTION_KEYS[value] || value;
 
 interface Props {
   visible: boolean;
@@ -60,6 +84,7 @@ const FilterModal: React.FC<Props> = ({
 }) => {
   const { primaryColor } = useBranding();
   const { colors } = useAppTheme();
+  const { t } = useLanguage();
   const styles = createStyles(colors);
   const slideAnim = useRef(new Animated.Value(responsiveHeight(100))).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -133,7 +158,7 @@ const FilterModal: React.FC<Props> = ({
         </View>
 
         <Text style={[styles.radioText, active && styles.radioTextActive]}>
-          {item}
+          {t(optionKey(item))}
         </Text>
       </TouchableOpacity>
     );
@@ -153,7 +178,7 @@ const FilterModal: React.FC<Props> = ({
         style={[styles.chip, active && styles.activeChip]}
       >
         <Text style={[styles.chipText, active && styles.activeChipText]}>
-          {item}
+          {t(optionKey(item))}
         </Text>
       </TouchableOpacity>
     );
@@ -189,7 +214,7 @@ const FilterModal: React.FC<Props> = ({
               ]}
             >
               <View style={styles.headerRow}>
-                <Text style={styles.title}>Filter</Text>
+                <Text style={styles.title}>{t("filter")}</Text>
 
                 <TouchableOpacity onPress={onClose}>
                   <Ionicons
@@ -206,7 +231,7 @@ const FilterModal: React.FC<Props> = ({
                   paddingBottom: responsiveHeight(3),
                 }}
               >
-                <Text style={styles.sectionTitle}>Skill Type</Text>
+                <Text style={styles.sectionTitle}>{t("skillType")}</Text>
 
                 {skillTypes.map((item, index) => (
                   <View key={index}>
@@ -216,7 +241,7 @@ const FilterModal: React.FC<Props> = ({
                   </View>
                 ))}
 
-                <Text style={styles.sectionTitle}>Difficulty level</Text>
+                <Text style={styles.sectionTitle}>{t("difficultyLevel")}</Text>
 
                 <View style={styles.chipWrapper}>
                   {difficultyLevels.map((item, index) => (
@@ -230,7 +255,7 @@ const FilterModal: React.FC<Props> = ({
                   ))}
                 </View>
 
-                <Text style={styles.sectionTitle}>Duration</Text>
+                <Text style={styles.sectionTitle}>{t("durationWord")}</Text>
 
                 <View style={styles.chipWrapper}>
                   {durations.map((item, index) => (
@@ -244,7 +269,7 @@ const FilterModal: React.FC<Props> = ({
                   ))}
                 </View>
 
-                <Text style={styles.sectionTitle}>Goal Focus</Text>
+                <Text style={styles.sectionTitle}>{t("goalFocus")}</Text>
 
                 {goalFocus.map((item, index) => (
                   <View key={index}>
@@ -261,7 +286,7 @@ const FilterModal: React.FC<Props> = ({
                   style={styles.cancelBtn}
                   onPress={onClose}
                 >
-                  <Text style={styles.cancelText}>Cancel</Text>
+                   <Text style={styles.cancelText}>{t("cancel")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity activeOpacity={0.8} style={[styles.applyBtn, { backgroundColor: primaryColor }]} onPress={() => {
@@ -273,7 +298,7 @@ const FilterModal: React.FC<Props> = ({
                   });
                   onClose();
                 }}>
-                  <Text style={styles.applyText}>Apply filter</Text>
+                   <Text style={styles.applyText}>{t("applyFilter")}</Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>

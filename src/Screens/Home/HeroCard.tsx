@@ -17,7 +17,10 @@ import { useNavigation } from "@react-navigation/native";
 
 import LearnCard from "../../Components/Home/Cards/LearnCard";
 import { getPros, getDrills } from "../../services/api";
+import { useAuthContext } from "../../context/AuthContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { isProTier } from "../../utils/subscription";
+import { useLanguage } from "../../i18n";
 
 const getWeekStart = () => {
   const weekStart = new Date();
@@ -55,7 +58,10 @@ const getWeeklyViews = (drill: any, weekStart: Date) => {
 const HeroCard = () => {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useAppTheme();
+  const { user } = useAuthContext();
+  const isPro = isProTier(user?.subscriptionTier);
   const styles = createStyles(colors, isDarkMode);
+  const { t } = useLanguage();
   const videoRef = useRef<Video>(null);
   const drillVideoRef = useRef<Video>(null);
   const [showPlayButton, setShowPlayButton] = useState(false);
@@ -168,7 +174,12 @@ const HeroCard = () => {
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.videoCard}
-            onPress={() => navigation.navigate("ProsDetail", { pro: bannerPro })}
+            onPress={() =>
+              navigation.navigate(
+                isPro ? "ProsDetail" : "Subscription",
+                isPro ? { pro: bannerPro } : undefined
+              )
+            }
           >
             <ImageBackground
               source={{ uri: bannerPro.imageUrl }}
@@ -212,7 +223,7 @@ const HeroCard = () => {
             )}
 
             <View style={styles.bottomContent}>
-              <Text style={styles.title}>Drill of the week</Text>
+              <Text style={styles.title}>{t("drillOfTheWeek")}</Text>
 
               <Text style={styles.subtitle}>Coach Hudson</Text>
             </View>
@@ -252,7 +263,7 @@ const HeroCard = () => {
         </TouchableOpacity>
 
         <View style={styles.drillTextBlock}>
-          <Text style={styles.drillTitle}>Drill of the week</Text>
+          <Text style={styles.drillTitle}>{t("drillOfTheWeek")}</Text>
 
           <Text style={styles.drillSubtitle}>{drillOfWeek.coach}</Text>
         </View>
