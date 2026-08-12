@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -18,8 +18,16 @@ import {
   responsiveHeight,
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
+import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import {
+  connectSocket,
+  onChatNew,
+  emitChatSend,
+  ChatMessagePayload,
+} from "../../services/socket";
+import { getChatHistory } from "../../services/api";
 
 const options = [
   "Account",
@@ -30,34 +38,106 @@ const options = [
   "Membership",
 ];
 
+const welcomeMessage = `Hi there!
+This is Bella from Secret is Work. To expedite resolutions and prioritize your request, kindly select the option below that suits your needs`;
+
+type UiMessage = {
+  id: string | number;
+  type: "sender" | "receiver";
+  text: string;
+  time: string;
+};
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  let hours = d.getHours();
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${hours.toString().padStart(2, "0")}:${minutes} ${ampm}`;
+}
+
 const HelpChat = () => {
   const navigation = useNavigation<any>();
+  const { user } = useAuthContext();
   const { primaryColor } = useBranding();
   const { colors, statusBarStyle } = useAppTheme();
   const styles = createStyles(colors);
   const [message, setMessage] = useState("");
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<UiMessage[]>([
     {
       id: 1,
       type: "receiver",
-      text: `Hi there!
-This is Bella from Secret is Work. To expedite resolutions and prioritize your request, kindly select the option below that suits your needs`,
+      text: welcomeMessage,
       time: "08:20 pm",
     },
   ]);
 
-  const handleSend = () => {
-    if (message.trim() === "") return;
+  const scrollRef = useRef<ScrollView>(null);
+  const userId = user?._id;
 
-    const newMessage = {
-      id: Date.now(),
-      type: "sender",
-      text: message,
-      time: "08:21 pm",
+  useEffect(() => {
+    if (!userId) return;
+
+    const room = `support:${userId}`;
+
+    getChatHistory()
+      .then((history) => {
+        if (history.length > 0) {
+          setMessages(
+            history.map((m) => ({
+              id: m._id,
+              type: m.isAgent ? "receiver" : "sender",
+              text: m.text,
+              time: formatTime(m.createdAt),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    let unsubscribe: (() => void) | undefined;
+
+    connectSocket()
+      .then((s) => {
+        if (!s) return;
+        s.emit("join:support", room);
+        unsubscribe = onChatNew((payload: ChatMessagePayload) => {
+          const isSender = !payload.isAgent && payload.from === userId;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: payload._id,
+              type: isSender ? "sender" : "receiver",
+              text: payload.text,
+              time: formatTime(payload.createdAt),
+            },
+          ]);
+        });
+      })
+      .catch(() => {});
+
+    return () => {
+      unsubscribe?.();
     };
+  }, [userId]);
 
-    setMessages([...messages, newMessage]);
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  const sendText = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || !userId) return;
+    emitChatSend(`support:${userId}`, trimmed).catch(() => {});
+  };
+
+  const handleSend = () => {
+    if (message.trim() === "" || !userId) return;
+    sendText(message);
     setMessage("");
   };
 
@@ -71,6 +151,7 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -140,7 +221,11 @@ This is Bella from Secret is Work. To expedite resolutions and prioritize your r
             contentContainerStyle={styles.tagsContainer}
           >
             {options.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.tagButton}>
+              <TouchableOpacity
+                key={index}
+                style={styles.tagButton}
+                onPress={() => sendText(item)}
+              >
                 <Text style={styles.tagText}>{item}</Text>
               </TouchableOpacity>
             ))}

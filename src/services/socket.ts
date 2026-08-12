@@ -75,3 +75,25 @@ export function disconnectSocket(): void {
 export function getSocket(): Socket | null {
   return socket;
 }
+
+export type ChatMessagePayload = {
+  _id: string;
+  room: string;
+  from: string | null;
+  text: string;
+  isAgent: boolean;
+  createdAt: string;
+};
+
+export function onChatNew(cb: (payload: ChatMessagePayload) => void): () => void {
+  const s = getSocket();
+  if (!s) return () => {};
+  s.on("chat:new", cb as any);
+  return () => s.off("chat:new", cb as any);
+}
+
+export async function emitChatSend(room: string, text: string): Promise<void> {
+  const s = getSocket() ?? (await connectSocket());
+  if (!s) return;
+  s.emit("chat:send", { room, text });
+}

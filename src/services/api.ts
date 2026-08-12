@@ -386,4 +386,18 @@ export async function saveNotificationPrefs(prefs: NotificationPrefs) {
   return data.prefs as NotificationPrefs;
 }
 
+export interface ChatMessage {
+  _id: string;
+  room: string;
+  from: string | null;
+  text: string;
+  isAgent: boolean;
+  createdAt: string;
+}
+
+export async function getChatHistory() {
+  const { data } = await api.get("/chat/history");
+  return data.messages as ChatMessage[];
+}
+
 export default api;
