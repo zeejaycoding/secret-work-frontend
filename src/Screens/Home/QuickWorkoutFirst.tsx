@@ -18,6 +18,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
+import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const difficultyLevels = [
   {
@@ -58,6 +60,11 @@ const QuickWorkoutFirst = () => {
   const styles = createStyles(colors, isDarkMode);
   const [selectedLevel, setSelectedLevel] = useState(2);
   const coach = route.params?.coach || "";
+  const isPro = useIsPro();
+
+  if (!isPro) {
+    return <ProPaywall />;
+  }
 
   const content = (
     <>

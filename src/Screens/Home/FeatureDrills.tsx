@@ -208,6 +208,8 @@ const FeatureDrills = () => {
 
   const currentDrills = drillsData[selectedCategory] || [];
 
+  if (!isPro) return null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>

@@ -28,6 +28,7 @@ import {
   translateLevel,
 } from "../../i18n";
 import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const fallbackDrillsData = [
   {
@@ -169,6 +170,7 @@ const DrilLibraryMainScreen = ({ route }: any) => {
   const { t } = useLanguage();
   const styles = createStyles(colors, isDarkMode);
   const isPro = useIsPro();
+
   const [selectedCategory, setSelectedCategory] = useState(
     route?.params?.category || "All"
   );
@@ -280,6 +282,15 @@ const DrilLibraryMainScreen = ({ route }: any) => {
       return true;
     });
   }, [drillsData, searchText, selectedCategory, filters]);
+
+  if (!isPro) {
+    return (
+      <ProPaywall
+        title={t("unlockDrills")}
+        subtitle={t("unlockDrillsDesc")}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

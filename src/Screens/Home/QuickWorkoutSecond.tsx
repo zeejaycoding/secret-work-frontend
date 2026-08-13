@@ -25,6 +25,8 @@ import { getQuickWorkout } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { sumDurations } from "../../utils/duration";
+import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const QuickWorkoutSecond = () => {
   const navigation = useNavigation<any>();
@@ -38,6 +40,11 @@ const QuickWorkoutSecond = () => {
   const [availableLevels, setAvailableLevels] = useState<string[]>([]);
   const level = route.params?.level || "Random";
   const coach = route.params?.coach || "";
+  const isPro = useIsPro();
+
+  if (!isPro) {
+    return <ProPaywall />;
+  }
 
   useEffect(() => {
     let mounted = true;

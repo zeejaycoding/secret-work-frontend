@@ -268,6 +268,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "Code sent",
     newCodeSent: "A new verification code has been sent",
     resendFailed: "Resend failed",
+    unlockDrills: "Unlock the Drill Library",
+    unlockDrillsDesc: "Subscribe to Pro to access all drills and training videos.",
   },
   es: {
     language: "Idioma",
@@ -506,6 +508,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "Código enviado",
     newCodeSent: "Se ha enviado un nuevo código de verificación",
     resendFailed: "Reenvío fallido",
+    unlockDrills: "Desbloquea la biblioteca de ejercicios",
+    unlockDrillsDesc: "Suscríbete a Pro para acceder a todos los ejercicios y videos de entrenamiento.",
   },
   fr: {
     language: "Langue",
@@ -744,6 +748,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "Code envoyé",
     newCodeSent: "Un nouveau code de vérification a été envoyé",
     resendFailed: "Échec de l'envoi",
+    unlockDrills: "Débloquez la bibliothèque d'exercices",
+    unlockDrillsDesc: "Abonnez-vous à Pro pour accéder à tous les exercices et vidéos d'entraînement.",
   },
   de: {
     language: "Sprache",
@@ -982,6 +988,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "Code gesendet",
     newCodeSent: "Ein neuer Bestätigungscode wurde gesendet",
     resendFailed: "Erneutes Senden fehlgeschlagen",
+    unlockDrills: "Schalte die Drill-Bibliothek frei",
+    unlockDrillsDesc: "Abonniere Pro, um auf alle Drills und Trainingsvideos zuzugreifen.",
   },
   ar: {
     language: "اللغة",
@@ -1217,6 +1225,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "تم إرسال الرمز",
     newCodeSent: "تم إرسال رمز تحقق جديد",
     resendFailed: "فشل إعادة الإرسال",
+    unlockDrills: "افتح مكتبة التدريبات",
+    unlockDrillsDesc: "اشترك في برو للوصول إلى جميع التدريبات ومقاطع الفيديو التدريبية.",
   },
   ur: {
     language: "زبان",
@@ -1453,6 +1463,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     codeSent: "کوڈ بھیج دیا گیا",
     newCodeSent: "ایک نیا تصدیقی کوڈ بھیج دیا گیا ہے",
     resendFailed: "دوبارہ بھیجنا ناکام رہا",
+    unlockDrills: "ڈرل لائبریری کھولیں",
+    unlockDrillsDesc: "تمام ڈرلز اور تربیتی ویڈیوز تک رسائی کے لیے پرو سبسکرائب کریں۔",
   },
 
 };

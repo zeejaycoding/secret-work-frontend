@@ -13,6 +13,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
 import { ThemeProvider, useAppTheme } from "./context/ThemeContext";
 import { LanguageProvider } from "./i18n";
+import { useAuthContext } from "./context/AuthContext";
 import { clerkTokenCache } from "./utils/clerkTokenCache";
 import { setupPushNotifications } from "./services/notifications";
 
@@ -114,6 +115,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppShell() {
   const { colors, isDarkMode, statusBarStyle } = useAppTheme();
+  const { isSignedIn } = useAuthContext();
+
+  useEffect(() => {
+    if (isSignedIn) setupPushNotifications();
+  }, [isSignedIn]);
 
   const navigationTheme = {
     ...(isDarkMode ? DarkTheme : DefaultTheme),
@@ -222,10 +228,6 @@ export default function App() {
     "Inter-Bold": require("../assets/fonts/Inter_18pt-Bold.ttf"),
     "Inter-Medium": require("../assets/fonts/Inter_18pt-Medium.ttf"),
   });
-
-  useEffect(() => {
-    setupPushNotifications();
-  }, []);
 
   return (
     <ClerkProvider

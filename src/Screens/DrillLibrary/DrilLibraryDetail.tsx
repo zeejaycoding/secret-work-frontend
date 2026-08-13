@@ -273,11 +273,11 @@ const DrilLibraryDetail = ({ route }: any) => {
   const drill = route?.params?.drill;
   const isPro = useIsPro();
 
-  if (drill?.proId && !isPro) {
+  if (!isPro) {
     return (
       <ProPaywall
-        title="This drill is a Pro feature"
-        subtitle="Subscribe to Pro to unlock drills from elite players and coaches."
+        title="Drills are a Pro feature"
+        subtitle="Subscribe to Pro to unlock all drills and training videos."
       />
     );
   }
