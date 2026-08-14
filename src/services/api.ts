@@ -1,6 +1,12 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuthLogout?: boolean;
+  }
+}
+
 const api = axios.create({
   baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api`,
   timeout: 60000,
@@ -28,10 +34,21 @@ api.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     const apiError = error.response?.data?.error;
-
-    if (status === 401) {
-      await SecureStore.deleteItemAsync("auth-token").catch(() => {});
-    } else if (status === 403 && apiError === "Your account has been suspended") {
+    // Diagnostic: log every failed request so we can identify the exact call
+    // that triggers an issue (visible in the Metro / `adb logcat` console).
+    const url = (error.config as any)?.url || "";
+    const method = ((error.config as any)?.method || "").toUpperCase();
+    if (status) {
+      console.warn(`API ${status} ${method} ${url}`, apiError || "");
+    } else {
+      console.warn(`API network error ${method} ${url}`, error.message);
+    }
+    // A 401 must NOT wipe the session. A single failed/unauthorized request
+    // (transient error, a protected endpoint, an expired read, etc.) was
+    // deleting the auth token, logging the user out and dropping every screen
+    // to mock/fallback data — e.g. opening Live Chat. Logout only happens via
+    // an explicit sign-out (or an account suspension below).
+    if (status === 403 && apiError === "Your account has been suspended") {
       await SecureStore.deleteItemAsync("auth-token").catch(() => {});
       error.message = apiError;
     }
@@ -376,22 +393,32 @@ export interface InAppNotification {
 }
 
 export async function getInAppNotifications() {
-  const { data } = await api.get("/users/notifications");
+  const { data } = await api.get("/users/notifications", {
+    skipAuthLogout: true,
+  });
   return data.notifications as InAppNotification[];
 }
 
 export async function getUnreadNotificationCount() {
-  const { data } = await api.get("/users/notifications/unread-count");
+  const { data } = await api.get("/users/notifications/unread-count", {
+    skipAuthLogout: true,
+  });
   return data.count as number;
 }
 
 export async function markNotificationRead(id: string) {
-  const { data } = await api.patch(`/users/notifications/${id}/read`);
+  const { data } = await api.patch(`/users/notifications/${id}/read`, null, {
+    skipAuthLogout: true,
+  });
   return data;
 }
 
 export async function markAllNotificationsRead() {
-  const { data } = await api.post("/users/notifications/read-all");
+  const { data } = await api.post(
+    "/users/notifications/read-all",
+    {},
+    { skipAuthLogout: true }
+  );
   return data;
 }
 
@@ -426,7 +453,7 @@ export interface ChatMessage {
 }
 
 export async function getChatHistory() {
-  const { data } = await api.get("/chat/history");
+  const { data } = await api.get("/chat/history", { skipAuthLogout: true });
   return data.messages as ChatMessage[];
 }
 

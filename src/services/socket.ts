@@ -37,7 +37,9 @@ export async function connectSocket(): Promise<Socket | null> {
 
   socket = io(process.env.EXPO_PUBLIC_SOCKET_URL, {
     auth: { token },
-    transports: ["websocket"],
+    // Let socket.io negotiate the best transport (polling → websocket).
+    // Forcing ["websocket"] only fails with "websocket error" behind many
+    // proxies/hosts, which broke the live-chat connection.
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,

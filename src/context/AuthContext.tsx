@@ -62,8 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const userData = await getMe();
       setDbUser(userData);
-    } catch {
-      setDbUser(null);
+    } catch (error) {
+      // Never wipe the user we already have. A single failed getMe (transient
+      // network blip, backend cold start, etc.) used to set dbUser to null,
+      // which made the UI fall back to "User" (e.g. after visiting Live Chat).
+      // Only an explicit sign-out clears the user.
+      console.warn(
+        "refreshDbUser failed:",
+        (error as any)?.message || error
+      );
     }
   }, []);
 

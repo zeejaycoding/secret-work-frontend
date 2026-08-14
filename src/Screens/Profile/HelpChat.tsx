@@ -46,6 +46,7 @@ type UiMessage = {
   type: "sender" | "receiver";
   text: string;
   time: string;
+  __temp?: boolean;
 };
 
 function formatTime(dateStr: string) {
@@ -108,15 +109,22 @@ const HelpChat = () => {
         s.emit("join:support", room);
         unsubscribe = onChatNew((payload: ChatMessagePayload) => {
           const isSender = !payload.isAgent && payload.from === userId;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: payload._id,
-              type: isSender ? "sender" : "receiver",
-              text: payload.text,
-              time: formatTime(payload.createdAt),
-            },
-          ]);
+          const type = isSender ? "sender" : "receiver";
+          setMessages((prev) => {
+            // Replace a matching optimistic (temp) message with the real one.
+            const reconciled = prev.filter(
+              (m) => !(m.__temp && m.text === payload.text && m.type === type)
+            );
+            return [
+              ...reconciled,
+              {
+                id: payload._id,
+                type,
+                text: payload.text,
+                time: formatTime(payload.createdAt),
+              },
+            ];
+          });
         });
       })
       .catch(() => {});
@@ -134,6 +142,17 @@ const HelpChat = () => {
     const trimmed = text.trim();
     if (!trimmed || !userId) return;
     emitChatSend(`support:${userId}`, trimmed).catch(() => {});
+    // Optimistically show the outgoing message so it never appears "lost".
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `temp-${Date.now()}-${Math.random()}`,
+        type: "sender",
+        text: trimmed,
+        time: formatTime(new Date().toISOString()),
+        __temp: true,
+      },
+    ]);
   };
 
   const handleSend = () => {
