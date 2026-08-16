@@ -280,6 +280,24 @@ export async function updateMe(updates: Record<string, any>) {
   return data.user;
 }
 
+export async function uploadProfilePic(formData: FormData) {
+  const { data } = await api.post("/users/me/avatar", formData, {
+    timeout: 120000,
+    headers: {
+      // Must override the instance's "application/json" default: axios's
+      // transformRequest JSON-serializes FormData when the Content-Type is
+      // application/json, destroying the multipart file before it is sent.
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data.user;
+}
+
+export async function deleteProfilePic() {
+  const { data } = await api.delete("/users/me/avatar");
+  return data.user;
+}
+
 export interface UserPreferences {
   darkMode: boolean;
   language: string;

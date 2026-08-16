@@ -1,4 +1,5 @@
-import React, { useCallback } from "react";
+import React, { useState, useCallback } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   View,
   StyleSheet,
@@ -9,6 +10,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
+  Linking,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
@@ -27,6 +30,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors, overlayGradient } from "../../context/ThemeContext";
 import { useLanguage } from "../../i18n";
+import { uploadProfilePic, deleteProfilePic } from "../../services/api";
 
 const ProfileScreen = () => {
   const navigation = useNavigation<any>();
@@ -36,12 +40,95 @@ const ProfileScreen = () => {
   const { t } = useLanguage();
   const styles = createStyles(colors);
   const overlays = overlayGradient(isDarkMode);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       refreshDbUser();
     }, [refreshDbUser])
   );
+
+  const uploadProfileImage = useCallback(async (imageUri: string) => {
+    setIsUploading(true);
+    try {
+      let formData = new FormData();
+      formData.append("profile", {
+        uri: imageUri,
+        type: "image/jpeg",
+        name: "profile.jpg",
+      } as any);
+
+      const updatedUser = await uploadProfilePic(formData);
+      if (updatedUser) {
+        await refreshDbUser();
+        Alert.alert("Success", "Profile image saved");
+      }
+    } catch (error: any) {
+      setProfileImage(null);
+      Alert.alert("Error", "Failed to upload profile image");
+      console.error("Upload error:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [refreshDbUser]);
+
+  const pickImage = useCallback(async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Photos access needed",
+          "Allow Secret Work to access your photos so you can set a profile picture.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+        setProfileImage(uri);
+        await uploadProfileImage(uri);
+      }
+    } catch (error: any) {
+      Alert.alert("Error", "Could not open the photo library. Please try again.");
+      console.error("Pick image error:", error);
+    }
+  }, [uploadProfileImage]);
+
+  const deleteProfileImage = useCallback(async () => {
+    Alert.alert(
+      "Remove profile picture?",
+      "This will remove your current profile picture.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteProfilePic();
+              setProfileImage(null);
+              await refreshDbUser();
+            } catch (error: any) {
+              Alert.alert("Error", "Failed to remove profile image");
+              console.error("Delete avatar error:", error);
+            }
+          },
+        },
+      ]
+    );
+  }, [refreshDbUser]);
 
   const displayName = user?.firstName
     ? `${user.firstName}`
@@ -159,14 +246,55 @@ const ProfileScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.profileContainer}>
-          <View style={[styles.profileBorder, { borderColor: primaryColor }]}>
-            <Image
-              source={require("../../assets/mainprofile.png")}
-              style={styles.profileImage}
-            />
-            {isPro && <View style={styles.profileBottomCap} />}
-          </View>
+          <View style={styles.profileContainer}>
+            <View style={styles.avatarWrap}>
+              <View style={styles.profileBorder}>
+                <TouchableOpacity
+                  onPress={pickImage}
+                  style={styles.avatarTouchable}
+                  activeOpacity={0.85}
+                >
+                  <Image
+                    source={
+                      profileImage
+                        ? { uri: profileImage }
+                        : user?.avatarUrl
+                        ? { uri: user.avatarUrl }
+                        : require("../../assets/mainprofile.png")
+                    }
+                    style={styles.profileImage}
+                    resizeMode="cover"
+                  />
+                  {isUploading && (
+                    <View style={styles.uploadingOverlay} pointerEvents="none">
+                      <ActivityIndicator color={colors.white} size="small" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                onPress={pickImage}
+                style={styles.cameraBtn}
+                hitSlop={10}
+              >
+                <Ionicons name="camera" size={16} color={colors.white} />
+              </TouchableOpacity>
+
+              {user?.avatarUrl ? (
+                <TouchableOpacity
+                  onPress={deleteProfileImage}
+                  style={styles.deleteAvatarBtn}
+                  hitSlop={10}
+                >
+                  <Ionicons name="trash" size={15} color={colors.white} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <Text style={styles.avatarHint}>
+              {user?.avatarUrl ? "Tap photo to change" : "Tap photo to add"}
+            </Text>
 
           {isPro && (
             <View style={[styles.proMemberTag, { backgroundColor: primaryColor }]}>
@@ -220,22 +348,22 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: primaryColor }]}>{activeSince}</Text>
-              <Text style={styles.statLabel}>{t("activeSince")}</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: primaryColor }]}>{workoutCount}</Text>
-              <Text style={styles.statLabel}>{t("workouts")}</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <Text style={[styles.statValue, { color: primaryColor }]}>{intensity}%</Text>
-              <Text style={styles.statLabel}>{t("intensity")}</Text>
-            </View>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={[styles.statValue, { color: primaryColor }]}>{activeSince}</Text>
+            <Text style={styles.statLabel}>{t("activeSince")}</Text>
           </View>
+
+          <View style={styles.statCard}>
+            <Text style={[styles.statValue, { color: primaryColor }]}>{workoutCount}</Text>
+            <Text style={styles.statLabel}>{t("workouts")}</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={[styles.statValue, { color: primaryColor }]}>{intensity}%</Text>
+            <Text style={styles.statLabel}>{t("intensity")}</Text>
+          </View>
+        </View>
 
         {menuData.map((item) => (
           <TouchableOpacity
@@ -313,9 +441,15 @@ const createStyles = (colors: ThemeColors) =>
     marginBottom: responsiveHeight(3),
   },
 
-  profileBorder: {
+  avatarWrap: {
+    position: "relative",
     width: responsiveWidth(33),
     height: responsiveWidth(33),
+  },
+
+  profileBorder: {
+    width: "100%",
+    height: "100%",
     borderRadius: responsiveWidth(100),
     borderWidth: moderateScale(3),
     borderColor: "#E50914",
@@ -325,38 +459,79 @@ const createStyles = (colors: ThemeColors) =>
     backgroundColor: colors.backgroundElevated,
   },
 
-     profileImage: {
-      width: "100%",
-      height: "100%",
-    },
+  deleteAvatarBtn: {
+    position: "absolute",
+    top: -moderateScale(3),
+    right: -moderateScale(3),
+    width: moderateScale(26),
+    height: moderateScale(26),
+    borderRadius: moderateScale(13),
+    backgroundColor: "#E50914",
+    borderWidth: moderateScale(1.5),
+    borderColor: colors.backgroundElevated,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    profileBottomCap: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      width: "100%",
-      height: "45%",
-      backgroundColor: colors.overlay,
-      borderTopLeftRadius: responsiveWidth(16.5),
-      borderTopRightRadius: responsiveWidth(16.5),
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
-    },
+  cameraBtn: {
+    position: "absolute",
+    bottom: -moderateScale(3),
+    right: -moderateScale(3),
+    width: moderateScale(30),
+    height: moderateScale(30),
+    borderRadius: moderateScale(15),
+    backgroundColor: "#E50914",
+    borderWidth: moderateScale(1.5),
+    borderColor: colors.backgroundElevated,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    proMemberTag: {
-      alignSelf: "center",
-      borderRadius: moderateScale(20),
-      paddingHorizontal: responsiveWidth(4),
-      paddingVertical: responsiveHeight(0.6),
-      marginTop: responsiveHeight(0.5),
-    },
+  avatarHint: {
+    color: colors.textSoft,
+    fontSize: moderateScale(11),
+    fontFamily: "Inter-Medium",
+    marginTop: responsiveHeight(0.8),
+    textAlign: "center",
+  },
 
-    proMemberText: {
-      color: colors.white,
-      fontSize: moderateScale(12),
-      fontFamily: "Inter-Medium",
-    },
+  avatarTouchable: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  profileImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  uploadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: responsiveWidth(100),
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  proMemberTag: {
+    alignSelf: "center",
+    borderRadius: moderateScale(20),
+    paddingHorizontal: responsiveWidth(4),
+    paddingVertical: responsiveHeight(0.6),
+    marginTop: responsiveHeight(0.5),
+  },
+
+  proMemberText: {
+    color: colors.white,
+    fontSize: moderateScale(12),
+    fontFamily: "Inter-Medium",
+  },
 
   userName: {
     color: colors.text,
@@ -371,8 +546,8 @@ const createStyles = (colors: ThemeColors) =>
     marginTop: responsiveHeight(0.2),
   },
 
-    editText: {
-       color: colors.textSoft,
+  editText: {
+    color: colors.textSoft,
     fontSize: moderateScale(11),
     fontFamily: "Inter-Medium",
   },
@@ -436,12 +611,12 @@ const createStyles = (colors: ThemeColors) =>
     marginBottom: responsiveHeight(1.5),
   },
 
-     statCard: {
-       width: responsiveWidth(29),
-       backgroundColor: colors.backgroundCard,
-       borderRadius: moderateScale(16),
-       borderWidth: 1,
-       borderColor: colors.borderStrong,
+  statCard: {
+    width: responsiveWidth(29),
+    backgroundColor: colors.backgroundCard,
+    borderRadius: moderateScale(16),
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
     paddingVertical: responsiveHeight(2),
     alignItems: "center",
   },
@@ -492,11 +667,11 @@ const createStyles = (colors: ThemeColors) =>
     fontFamily: "Inter-Medium",
   },
 
-    logoutButton: {
-      width: "100%",
-      height: responsiveHeight(7),
-      borderWidth: 1,
-      borderColor: colors.borderStrong,
+  logoutButton: {
+    width: "100%",
+    height: responsiveHeight(7),
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
     borderRadius: moderateScale(14),
     alignItems: "center",
     justifyContent: "center",

@@ -224,7 +224,11 @@ const HelpChat = () => {
                     </View>
 
                     <Image
-                      source={require("../../assets/mainprofile.png")}
+                      source={
+                        user?.avatarUrl
+                          ? { uri: user.avatarUrl }
+                          : require("../../assets/mainprofile.png")
+                      }
                       style={styles.profileImage}
                     />
                   </>

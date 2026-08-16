@@ -80,7 +80,7 @@ const SignupScreen = () => {
         clerk.user?.imageUrl ||
         "";
 
-      let clerkToken: string | null = null;
+      let clerkToken: string | null | undefined = null;
       for (let i = 0; i < 10; i++) {
         clerkToken = await clerk.session?.getToken();
         if (clerkToken) break;

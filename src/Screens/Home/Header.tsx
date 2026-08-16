@@ -74,7 +74,15 @@ const Header = () => {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <Image source={require("../../assets/user.png")} style={styles.image} />
+        <Image
+          source={
+            user?.avatarUrl
+              ? { uri: user.avatarUrl }
+              : require("../../assets/user.png")
+          }
+          style={styles.image}
+          resizeMode={user?.avatarUrl ? "cover" : "contain"}
+        />
 
         <View>
           <Text style={styles.title}>{t("hey", { name: displayName })}</Text>

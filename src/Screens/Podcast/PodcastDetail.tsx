@@ -17,7 +17,7 @@ import {
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { Audio } from "expo-av";
+import { Audio, Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 
 import { getPodcast, getPros, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
@@ -35,6 +35,7 @@ const PodcastDetail = () => {
   const styles = createStyles(colors);
   const { id } = route.params || {};
   const soundRef = useRef<Audio.Sound | null>(null);
+  const videoRef = useRef<Video | null>(null);
   const [podcast, setPodcast] = useState<any>(null);
   const isPro = useIsPro();
   const [proNames, setProNames] = useState<Set<string>>(new Set());
@@ -60,6 +61,11 @@ const PodcastDetail = () => {
   );
 
   const locked = !isPro && isProPodcast;
+  const isVideo = !!(
+    podcast &&
+    (String(podcast.mediaType || "").toLowerCase().startsWith("video") ||
+      podcast.type === "Video")
+  );
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(1);
   const [position, setPosition] = useState(0);
@@ -110,7 +116,7 @@ const PodcastDetail = () => {
 
   useEffect(() => {
     if (!podcast || locked) return;
-    loadAudio();
+    if (!isVideo) loadAudio();
     const interval = setInterval(() => flushProgress(), 30000);
 
     return () => {
@@ -118,7 +124,7 @@ const PodcastDetail = () => {
       flushProgress(completionRef.current);
       unloadAudio();
     };
-  }, [podcast, flushProgress, locked]);
+  }, [podcast, flushProgress, locked, isVideo]);
 
   const loadAudio = async () => {
     listenedSecRef.current = 0;
@@ -184,7 +190,57 @@ const PodcastDetail = () => {
     }
   };
 
+  const handleVideoStatusUpdate = (status: AVPlaybackStatus) => {
+    if (!status.isLoaded) return;
+    const pos = status.positionMillis || 0;
+    setPosition(pos);
+    setDuration(status.durationMillis || 1);
+    setIsPlaying(status.isPlaying);
+
+    if (
+      status.isPlaying &&
+      lastPositionRef.current != null &&
+      pos > lastPositionRef.current
+    ) {
+      listenedSecRef.current += (pos - lastPositionRef.current) / 1000;
+    }
+    lastPositionRef.current = pos;
+
+    if (status.durationMillis) {
+      completionRef.current = Math.min(
+        100,
+        Math.round((pos / status.durationMillis) * 100)
+      );
+    }
+
+    if (status.didJustFinish) {
+      if (repeatRef.current && videoRef.current) {
+        videoRef.current.setPositionAsync(0);
+        videoRef.current.playAsync();
+        lastPositionRef.current = 0;
+      } else {
+        setIsPlaying(false);
+        flushProgress(100);
+      }
+    }
+  };
+
   const togglePlayPause = async () => {
+    if (isVideo) {
+      if (!videoRef.current) return;
+
+      if (isPlaying) {
+        await videoRef.current.pauseAsync();
+        flushProgress(completionRef.current);
+      } else {
+        await videoRef.current.playAsync();
+        if (id && podcast?.mediaUrl) {
+          incrementPodcastPlays(id).catch(() => {});
+        }
+      }
+      return;
+    }
+
     if (!soundRef.current) return;
 
     if (isPlaying) {
@@ -209,21 +265,31 @@ const PodcastDetail = () => {
   };
 
   const skipBack = async () => {
-    if (!soundRef.current) return;
     const newPos = Math.max(0, position - 15000);
-    await soundRef.current.setPositionAsync(newPos);
+    if (isVideo) {
+      if (!videoRef.current) return;
+      await videoRef.current.setPositionAsync(newPos);
+    } else {
+      if (!soundRef.current) return;
+      await soundRef.current.setPositionAsync(newPos);
+    }
     setPosition(newPos);
   };
 
   const skipForward = async () => {
-    if (!soundRef.current) return;
     let newPos: number;
     if (shuffleOn) {
       newPos = Math.random() * Math.max(0, duration - 1000);
     } else {
       newPos = Math.min(duration, position + 15000);
     }
-    await soundRef.current.setPositionAsync(newPos);
+    if (isVideo) {
+      if (!videoRef.current) return;
+      await videoRef.current.setPositionAsync(newPos);
+    } else {
+      if (!soundRef.current) return;
+      await soundRef.current.setPositionAsync(newPos);
+    }
     setPosition(newPos);
   };
 
@@ -326,39 +392,73 @@ const PodcastDetail = () => {
         </TouchableOpacity>
 
         <View style={styles.cardWrapper}>
-          <ImageBackground
-            source={
-              podcast?.imageUrl
-                ? { uri: podcast.imageUrl }
-                : require("../../assets/podone.png")
-            }
-            style={styles.cardImage}
-            imageStyle={styles.cardImageStyle}
-          >
-            <LinearGradient
-              colors={[
-                "rgba(0,255,100,0.70)",
-                "rgba(0,255,100,0.35)",
-                "rgba(0,255,100,0.20)",
-              ]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.greenOverlay}
-            />
+          {isVideo ? (
+            <View style={styles.cardImage}>
+              {podcast?.mediaUrl ? (
+                <Video
+                  key={podcast?._id || id}
+                  ref={videoRef}
+                  style={styles.video}
+                  source={{ uri: podcast.mediaUrl }}
+                  resizeMode={ResizeMode.CONTAIN}
+                  shouldPlay={false}
+                  onPlaybackStatusUpdate={handleVideoStatusUpdate}
+                />
+              ) : (
+                <ImageBackground
+                  source={
+                    podcast?.imageUrl
+                      ? { uri: podcast.imageUrl }
+                      : require("../../assets/podone.png")
+                  }
+                  style={styles.cardImage}
+                  imageStyle={styles.cardImageStyle}
+                >
+                  <Image
+                    source={require("../../assets/mic.png")}
+                    style={styles.micImage}
+                    resizeMode="contain"
+                  />
+                </ImageBackground>
+              )}
+            </View>
+          ) : (
+            <ImageBackground
+              source={
+                podcast?.imageUrl
+                  ? { uri: podcast.imageUrl }
+                  : require("../../assets/podone.png")
+              }
+              style={styles.cardImage}
+              imageStyle={styles.cardImageStyle}
+            >
+              <LinearGradient
+                colors={[
+                  "rgba(0,255,100,0.70)",
+                  "rgba(0,255,100,0.35)",
+                  "rgba(0,255,100,0.20)",
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.greenOverlay}
+              />
 
-            <Image
-              source={require("../../assets/mic.png")}
-              style={styles.micImage}
-              resizeMode="contain"
-            />
-          </ImageBackground>
+              <Image
+                source={require("../../assets/mic.png")}
+                style={styles.micImage}
+                resizeMode="contain"
+              />
+            </ImageBackground>
+          )}
 
-          <View style={styles.profileWrapper}>
-            <Image
-              source={require("../../assets/mainprofile.png")}
-              style={styles.profileImage}
-            />
-          </View>
+          {!isVideo && (
+            <View style={styles.profileWrapper}>
+              <Image
+                source={require("../../assets/mainprofile.png")}
+                style={styles.profileImage}
+              />
+            </View>
+          )}
         </View>
 
         <Text style={styles.authorText}>{podcast?.host || "Richard Murphy"}</Text>
@@ -528,6 +628,12 @@ const createStyles = (colors: ThemeColors) =>
   },
 
   cardImageStyle: {
+    borderRadius: moderateScale(18),
+  },
+
+  video: {
+    width: "100%",
+    height: "100%",
     borderRadius: moderateScale(18),
   },
 

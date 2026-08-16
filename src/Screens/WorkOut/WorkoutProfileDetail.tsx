@@ -329,8 +329,9 @@ const WorkoutProfileDetail = () => {
         <View style={styles.profileSection}>
           <View style={styles.profileImageWrapper}>
             <Image
-              source={require("../../assets/profile.png")}
+              source={require("../../assets/coachimage.jpeg")}
               style={styles.profileImage}
+              resizeMode="cover"
             />
           </View>
 
@@ -464,6 +465,10 @@ const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
   profileImageWrapper: {
     width: responsiveWidth(21),
     height: responsiveWidth(21),
+    borderRadius: responsiveWidth(10.5),
+    overflow: "hidden",
+    borderWidth: moderateScale(3),
+    borderColor: colors.background,
   },
 
   profileImage: {

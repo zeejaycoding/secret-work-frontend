@@ -1,7 +1,6 @@
 import * as SecureStore from "expo-secure-store";
-import { TokenCache } from "@clerk/clerk-expo";
 
-export const clerkTokenCache: TokenCache = {
+export const clerkTokenCache = {
   async getToken(key: string) {
     try {
       return await SecureStore.getItemAsync(key);

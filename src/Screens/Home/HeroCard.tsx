@@ -62,9 +62,7 @@ const HeroCard = () => {
   const isPro = isProTier(user?.subscriptionTier);
   const styles = createStyles(colors, isDarkMode);
   const { t } = useLanguage();
-  const videoRef = useRef<Video>(null);
   const drillVideoRef = useRef<Video>(null);
-  const [showPlayButton, setShowPlayButton] = useState(false);
   const [showDrillPlayButton, setShowDrillPlayButton] = useState(true);
   const [bannerPro, setBannerPro] = useState<any>(null);
   const [drillOfWeek, setDrillOfWeek] = useState<any>({
@@ -135,27 +133,11 @@ const HeroCard = () => {
     setShowDrillPlayButton(true);
   }, [drillOfWeek.videoUrl]);
 
-  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (!status.isLoaded) return;
-
-    if (status.didJustFinish) {
-      setShowPlayButton(true);
-    }
-  };
-
   const handleDrillPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     if (!status.isLoaded) return;
 
     if (status.didJustFinish) {
       setShowDrillPlayButton(true);
-    }
-  };
-
-  const replayVideo = async () => {
-    if (videoRef.current) {
-      setShowPlayButton(false);
-
-      await videoRef.current.replayAsync();
     }
   };
 
@@ -195,40 +177,7 @@ const HeroCard = () => {
               </View>
             </ImageBackground>
           </TouchableOpacity>
-        ) : (
-          <View style={styles.videoCard}>
-            <Video
-              ref={videoRef}
-              source={require("../../assets/video/intro.mp4")}
-              style={styles.video}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay
-              isLooping={false}
-              isMuted
-              useNativeControls={false}
-              onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
-            />
-
-            {/* Shadow Overlay */}
-            <View style={styles.shadowOverlay} />
-
-            {showPlayButton && (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={styles.playButton}
-                onPress={replayVideo}
-              >
-                <Ionicons name="play" size={moderateScale(22)} color={colors.white} />
-              </TouchableOpacity>
-            )}
-
-            <View style={styles.bottomContent}>
-              <Text style={styles.title}>{t("drillOfTheWeek")}</Text>
-
-              <Text style={styles.subtitle}>Coach Hudson</Text>
-            </View>
-          </View>
-        )}
+        ) : null}
       </View>
 
       <View style={styles.drillWrapper}>
