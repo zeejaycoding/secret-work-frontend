@@ -109,7 +109,7 @@ const toCardShape = (drill: any) => ({
   proId: drill.proId || null,
 });
 
-const DrillCard = ({ item }: any) => {
+const DrillCard = ({ item, drills, index }: any) => {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useAppTheme();
   const { t } = useLanguage();
@@ -120,7 +120,11 @@ const DrillCard = ({ item }: any) => {
       activeOpacity={0.8}
       style={styles.cardWrapper}
       onPress={() =>
-        navigation.navigate("DrilLibraryDetail", { drill: item })
+        navigation.navigate("DrilLibraryDetail", {
+          drill: item,
+          drills,
+          currentDrillIndex: index,
+        })
       }
     >
       <ImageBackground
@@ -382,7 +386,9 @@ const DrilLibraryMainScreen = ({ route }: any) => {
             marginBottom: responsiveHeight(1.8),
           }}
           contentContainerStyle={styles.flatListContent}
-          renderItem={({ item }) => <DrillCard item={item} />}
+          renderItem={({ item, index }) => (
+            <DrillCard item={item} drills={filteredData} index={index} />
+          )}
         />
       </ScrollView>
     </View>

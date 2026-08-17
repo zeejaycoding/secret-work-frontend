@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   FlatList,
+  Animated,
 } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
@@ -74,6 +75,12 @@ const ProsDetails = ({ route }: any) => {
 
   const watchedSecRef = useRef(0);
   const lastPosRef = useRef(0);
+  const positionRef = useRef(0);
+
+  const lastTapRef = useRef<{ time: number; side: "left" | "right" } | null>(null);
+  const [tapIndicator, setTapIndicator] = useState<"left" | "right" | null>(null);
+  const tapAnim = useRef(new Animated.Value(0)).current;
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const flushWatchTime = () => {
     const sec = Math.round(watchedSecRef.current);
@@ -132,6 +139,7 @@ const ProsDetails = ({ route }: any) => {
     const progressPercentage = (currentPosition / duration) * 100;
 
     setProgress(progressPercentage);
+    positionRef.current = currentPosition;
 
     if (status.isPlaying && lastPosRef.current != null && currentPosition > lastPosRef.current) {
       watchedSecRef.current += (currentPosition - lastPosRef.current) / 1000;
@@ -139,7 +147,48 @@ const ProsDetails = ({ route }: any) => {
     lastPosRef.current = currentPosition;
   };
 
-  const openDrill = (item: any) => {
+  const handleVideoTap = (side: "left" | "right") => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+
+    if (last && last.side === side && now - last.time < 300) {
+      lastTapRef.current = null;
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+
+      if (side === "left") {
+        videoRef.current?.setPositionAsync(
+          Math.max(positionRef.current - 10000, 0),
+        );
+      } else {
+        videoRef.current?.setPositionAsync(
+          Math.min(positionRef.current + 10000, 999999),
+        );
+      }
+
+      setTapIndicator(side);
+      tapAnim.setValue(0);
+      Animated.timing(tapAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start(() => {
+        setTapIndicator(null);
+        tapAnim.setValue(0);
+      });
+    } else {
+      lastTapRef.current = { time: now, side };
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+
+      tapTimerRef.current = setTimeout(() => {
+        lastTapRef.current = null;
+        tapTimerRef.current = null;
+        setPaused((p) => !p);
+      }, 250);
+    }
+  };
+
+  const openDrill = (item: any, index: number) => {
     navigation.navigate("DrilLibraryDetail", {
       drill: {
         id: item.id,
@@ -151,6 +200,17 @@ const ProsDetails = ({ route }: any) => {
         imageUrl: item.image?.uri || "",
         videoUrl: item.videoUrl || "",
       },
+      drills: filteredLessons.map((l: any) => ({
+        id: l.id,
+        title: l.title,
+        category: l.category,
+        level: l.level,
+        description: l.description,
+        duration: l.duration,
+        imageUrl: l.image?.uri || "",
+        videoUrl: l.videoUrl || "",
+      })),
+      currentDrillIndex: index,
     });
   };
 
@@ -158,12 +218,12 @@ const ProsDetails = ({ route }: any) => {
     ? lessons.filter((item) => item.category === selectedTab)
     : lessons;
 
-  const renderLesson = ({ item }: any) => {
+  const renderLesson = ({ item, index }: any) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
         style={styles.lessonCard}
-        onPress={() => openDrill(item)}
+        onPress={() => openDrill(item, index)}
       >
         <Image source={item.image} style={styles.lessonImage} />
 
@@ -195,7 +255,7 @@ const ProsDetails = ({ route }: any) => {
 
         <TouchableOpacity
           style={styles.playButton}
-          onPress={() => openDrill(item)}
+          onPress={() => openDrill(item, index)}
         >
           <Ionicons name="play" size={moderateScale(16)} color={colors.text} />
         </TouchableOpacity>
@@ -234,46 +294,67 @@ const ProsDetails = ({ route }: any) => {
             />
           )}
 
+          <View style={styles.videoTouchContainer}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.videoTouchLeft}
+              onPress={() => handleVideoTap("left")}
+            />
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.videoTouchRight}
+              onPress={() => handleVideoTap("right")}
+            />
+          </View>
+
+          {tapIndicator && (
+            <Animated.View
+              style={[
+                styles.tapRipple,
+                tapIndicator === "left" ? styles.tapRippleLeft : styles.tapRippleRight,
+                {
+                  opacity: tapAnim.interpolate({
+                    inputRange: [0, 0.3, 1],
+                    outputRange: [0, 1, 0],
+                  }),
+                },
+              ]}
+              pointerEvents="none"
+            >
+              <Animated.View
+                style={[
+                  styles.tapRippleCircle,
+                  {
+                    opacity: tapAnim.interpolate({
+                      inputRange: [0, 0.3, 1],
+                      outputRange: [0.5, 0.3, 0],
+                    }),
+                    transform: [
+                      {
+                        scale: tapAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.5, 1.5],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
+              <Ionicons
+                name={tapIndicator === "left" ? "play-back" : "play-forward"}
+                size={moderateScale(28)}
+                color={colors.white}
+              />
+              <Text style={styles.tapLabel}>10 sec</Text>
+            </Animated.View>
+          )}
+
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => navigation.goBack()}
           >
             <Ionicons name="close" size={moderateScale(22)} color={colors.text} />
           </TouchableOpacity>
-
-          <View style={styles.controlsContainer}>
-            <TouchableOpacity style={styles.controlBtn}>
-              <Ionicons
-                name="play-back"
-                size={moderateScale(15)}
-                color={colors.text}
-              />
-            </TouchableOpacity>
-
-            <View style={styles.progressWrapper}>
-              <View style={styles.progressBg}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${progress}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.controlBtn}
-              onPress={() => setPaused(!paused)}
-            >
-              <Ionicons
-                name={paused ? "play" : "pause"}
-                size={moderateScale(15)}
-                color={colors.text}
-              />
-            </TouchableOpacity>
-          </View>
         </View>
 
         <View style={styles.detailsWrapper}>
@@ -366,6 +447,53 @@ const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
     height: "100%",
   },
 
+  videoTouchContainer: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: "row",
+    zIndex: 5,
+  },
+
+  videoTouchLeft: {
+    flex: 1,
+  },
+
+  videoTouchRight: {
+    flex: 1,
+  },
+
+  tapRipple: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 15,
+  },
+
+  tapRippleLeft: {
+    left: 0,
+  },
+
+  tapRippleRight: {
+    right: 0,
+  },
+
+  tapRippleCircle: {
+    position: "absolute",
+    width: moderateScale(80),
+    height: moderateScale(80),
+    borderRadius: moderateScale(40),
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+
+  tapLabel: {
+    color: colors.white,
+    fontSize: moderateScale(11),
+    fontFamily: "Inter-Medium",
+    marginTop: responsiveHeight(0.5),
+  },
+
   closeButton: {
     position: "absolute",
     top: responsiveHeight(6),
@@ -386,13 +514,15 @@ const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
     paddingHorizontal: responsiveWidth(4),
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: moderateScale(12),
   },
 
   controlBtn: {
-    width: moderateScale(34),
-    height: moderateScale(34),
-    borderRadius: moderateScale(17),
-    backgroundColor: colors.backgroundElevated,
+    width: moderateScale(36),
+    height: moderateScale(36),
+    borderRadius: moderateScale(18),
+    backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
   },

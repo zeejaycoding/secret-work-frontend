@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
+  Animated,
 } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
@@ -69,6 +70,12 @@ const HeroCard = () => {
     coach: "Coach Hudson",
     videoUrl: "",
   });
+  const positionRef = useRef(0);
+
+  const lastTapRef = useRef<{ time: number; side: "left" | "right" } | null>(null);
+  const [tapIndicator, setTapIndicator] = useState<"left" | "right" | null>(null);
+  const tapAnim = useRef(new Animated.Value(0)).current;
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     getPros()
@@ -136,8 +143,51 @@ const HeroCard = () => {
   const handleDrillPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     if (!status.isLoaded) return;
 
+    positionRef.current = status.positionMillis || 0;
+
     if (status.didJustFinish) {
       setShowDrillPlayButton(true);
+    }
+  };
+
+  const handleVideoTap = (side: "left" | "right") => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+
+    if (last && last.side === side && now - last.time < 300) {
+      lastTapRef.current = null;
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+
+      if (side === "left") {
+        drillVideoRef.current?.setPositionAsync(
+          Math.max(positionRef.current - 10000, 0),
+        );
+      } else {
+        drillVideoRef.current?.setPositionAsync(
+          Math.min(positionRef.current + 10000, 999999),
+        );
+      }
+
+      setTapIndicator(side);
+      tapAnim.setValue(0);
+      Animated.timing(tapAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start(() => {
+        setTapIndicator(null);
+        tapAnim.setValue(0);
+      });
+    } else {
+      lastTapRef.current = { time: now, side };
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+
+      tapTimerRef.current = setTimeout(() => {
+        lastTapRef.current = null;
+        tapTimerRef.current = null;
+        replayDrillVideo();
+      }, 250);
     }
   };
 
@@ -204,10 +254,65 @@ const HeroCard = () => {
 
           <View style={styles.shadowOverlay} />
 
+          <View style={styles.videoTouchContainer}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.videoTouchLeft}
+              onPress={() => handleVideoTap("left")}
+            />
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.videoTouchRight}
+              onPress={() => handleVideoTap("right")}
+            />
+          </View>
+
           {showDrillPlayButton && (
             <View style={styles.playButton}>
               <Ionicons name="play" size={moderateScale(22)} color={colors.white} />
             </View>
+          )}
+
+          {tapIndicator && (
+            <Animated.View
+              style={[
+                styles.tapRipple,
+                tapIndicator === "left" ? styles.tapRippleLeft : styles.tapRippleRight,
+                {
+                  opacity: tapAnim.interpolate({
+                    inputRange: [0, 0.3, 1],
+                    outputRange: [0, 1, 0],
+                  }),
+                },
+              ]}
+              pointerEvents="none"
+            >
+              <Animated.View
+                style={[
+                  styles.tapRippleCircle,
+                  {
+                    opacity: tapAnim.interpolate({
+                      inputRange: [0, 0.3, 1],
+                      outputRange: [0.5, 0.3, 0],
+                    }),
+                    transform: [
+                      {
+                        scale: tapAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.5, 1.5],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
+              <Ionicons
+                name={tapIndicator === "left" ? "play-back" : "play-forward"}
+                size={moderateScale(28)}
+                color={colors.white}
+              />
+              <Text style={styles.tapLabel}>10 sec</Text>
+            </Animated.View>
           )}
         </TouchableOpacity>
 
@@ -276,6 +381,53 @@ const createStyles = (colors: ThemeColors, isDarkMode: boolean) =>
     borderWidth: 1,
     borderColor: colors.borderStrong,
     zIndex: 20,
+  },
+
+  videoTouchContainer: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: "row",
+    zIndex: 5,
+  },
+
+  videoTouchLeft: {
+    flex: 1,
+  },
+
+  videoTouchRight: {
+    flex: 1,
+  },
+
+  tapRipple: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 20,
+  },
+
+  tapRippleLeft: {
+    left: 0,
+  },
+
+  tapRippleRight: {
+    right: 0,
+  },
+
+  tapRippleCircle: {
+    position: "absolute",
+    width: moderateScale(80),
+    height: moderateScale(80),
+    borderRadius: moderateScale(40),
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+
+  tapLabel: {
+    color: colors.white,
+    fontSize: moderateScale(11),
+    fontFamily: "Inter-Medium",
+    marginTop: responsiveHeight(0.5),
   },
 
   drillTextBlock: {

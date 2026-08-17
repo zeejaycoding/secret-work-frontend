@@ -104,6 +104,11 @@ const PracticeWorkout = () => {
   const watchedSecRef = useRef(0);
   const lastPosRef = useRef(0);
 
+  const lastTapRef = useRef<{ time: number; side: "left" | "right" } | null>(null);
+  const [tapIndicator, setTapIndicator] = useState<"left" | "right" | null>(null);
+  const tapAnim = useRef(new Animated.Value(0)).current;
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const workouts: WorkoutItem[] = useMemo(() => {
     const routeDrills = route.params?.drills;
     if (routeDrills && routeDrills.length) {
@@ -165,6 +170,52 @@ const PracticeWorkout = () => {
 
   const goToNext = () => {
     if (currentVideo < workouts.length - 1) selectVideo(currentVideo + 1);
+  };
+
+  const handleVideoTap = (side: "left" | "right") => {
+    const now = Date.now();
+    const last = lastTapRef.current;
+
+    if (last && last.side === side && now - last.time < 300) {
+      lastTapRef.current = null;
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+
+      const pos = positionRef.current[currentVideo] || 0;
+      if (side === "left") {
+        videoRef.current?.setPositionAsync(Math.max(pos - 10000, 0));
+      } else {
+        videoRef.current?.setPositionAsync(Math.min(pos + 10000, 999999));
+      }
+
+      setTapIndicator(side);
+      tapAnim.setValue(0);
+      Animated.timing(tapAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start(() => {
+        setTapIndicator(null);
+        tapAnim.setValue(0);
+      });
+    } else {
+      lastTapRef.current = { time: now, side };
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+
+      tapTimerRef.current = setTimeout(() => {
+        lastTapRef.current = null;
+        tapTimerRef.current = null;
+        videoRef.current?.getStatusAsync().then((status) => {
+          if (status.isLoaded) {
+            if (status.isPlaying) {
+              videoRef.current?.pauseAsync();
+            } else {
+              videoRef.current?.playAsync();
+            }
+          }
+        });
+      }, 250);
+    }
   };
 
   const completeWorkout = () => {
@@ -353,6 +404,61 @@ const PracticeWorkout = () => {
 
         <View style={styles.overlay} />
 
+        <View style={styles.videoTouchContainer}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.videoTouchLeft}
+            onPress={() => handleVideoTap("left")}
+          />
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.videoTouchRight}
+            onPress={() => handleVideoTap("right")}
+          />
+        </View>
+
+        {tapIndicator && (
+          <Animated.View
+            style={[
+              styles.tapRipple,
+              tapIndicator === "left" ? styles.tapRippleLeft : styles.tapRippleRight,
+              {
+                opacity: tapAnim.interpolate({
+                  inputRange: [0, 0.3, 1],
+                  outputRange: [0, 1, 0],
+                }),
+              },
+            ]}
+            pointerEvents="none"
+          >
+            <Animated.View
+              style={[
+                styles.tapRippleCircle,
+                {
+                  opacity: tapAnim.interpolate({
+                    inputRange: [0, 0.3, 1],
+                    outputRange: [0.5, 0.3, 0],
+                  }),
+                  transform: [
+                    {
+                      scale: tapAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.5, 1.5],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+            <Ionicons
+              name={tapIndicator === "left" ? "play-back" : "play-forward"}
+              size={moderateScale(28)}
+              color={colors.white}
+            />
+            <Text style={styles.tapLabel}>10 sec</Text>
+          </Animated.View>
+        )}
+
         <TouchableOpacity
           style={styles.closeButton}
           onPress={() => navigation.goBack()}
@@ -376,23 +482,9 @@ const PracticeWorkout = () => {
               <Ionicons
                 name="play-skip-back"
                 size={moderateScale(14)}
-                color={isDarkMode ? colors.white : colors.text}
+                color={colors.white}
               />
             </TouchableOpacity>
-
-          <View style={styles.progressBar}>
-            <Animated.View
-              style={[
-                styles.progressFill,
-                {
-                  width: animatedProgress.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ["0%", "101%"],
-                  }),
-                },
-              ]}
-            />
-          </View>
 
             <TouchableOpacity
               style={[
@@ -405,7 +497,7 @@ const PracticeWorkout = () => {
               <Ionicons
                 name="play-skip-forward"
                 size={moderateScale(14)}
-                color={isDarkMode ? colors.white : colors.text}
+                color={colors.white}
               />
             </TouchableOpacity>
         </View>
@@ -474,6 +566,53 @@ const createStyles = (colors: ThemeColors) =>
     backgroundColor: "rgba(0, 0, 0, 0.03)",
   },
 
+  videoTouchContainer: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: "row",
+    zIndex: 5,
+  },
+
+  videoTouchLeft: {
+    flex: 1,
+  },
+
+  videoTouchRight: {
+    flex: 1,
+  },
+
+  tapRipple: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 15,
+  },
+
+  tapRippleLeft: {
+    left: 0,
+  },
+
+  tapRippleRight: {
+    right: 0,
+  },
+
+  tapRippleCircle: {
+    position: "absolute",
+    width: moderateScale(80),
+    height: moderateScale(80),
+    borderRadius: moderateScale(40),
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+
+  tapLabel: {
+    color: colors.white,
+    fontSize: moderateScale(11),
+    fontFamily: "Inter-Medium",
+    marginTop: responsiveHeight(0.5),
+  },
+
   bottomGradient: {
     position: "absolute",
     bottom: 0,
@@ -501,15 +640,17 @@ const createStyles = (colors: ThemeColors) =>
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: responsiveWidth(4),
-    zIndex: 5,
+    gap: moderateScale(12),
+    zIndex: 10,
   },
 
   controlBtn: {
-    width: moderateScale(28),
-    height: moderateScale(28),
+    width: moderateScale(36),
+    height: moderateScale(36),
     borderRadius: moderateScale(20),
-    backgroundColor: colors.backgroundElevated,
+    backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
   },

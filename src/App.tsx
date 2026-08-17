@@ -89,7 +89,7 @@ export type RootStackParamList = {
   PracticeWorkout: { drills?: any[] };
   LearnPros: undefined;
   ProsDetail: { pro?: any };
-  DrilLibraryDetail: { drill?: any };
+  DrilLibraryDetail: { drill?: any; drills?: any[]; currentDrillIndex?: number };
   WorkoutProfileDetail: { workoutId?: string };
   HelpSupport: undefined;
   HelpChat: undefined;

@@ -22,6 +22,7 @@ import { getPodcasts, getPros } from "../../services/api";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { useLanguage } from "../../i18n";
 import { useIsPro } from "../../utils/subscription";
+import ProPaywall from "../../Components/ProPaywall";
 
 const PodcastsScreen = () => {
   const navigation = useNavigation<any>();
@@ -34,6 +35,7 @@ const PodcastsScreen = () => {
   const [learnData, setLearnData] = useState<any[]>([]);
 
   const loadPodcasts = useCallback(() => {
+    if (!isPro) return;
     Promise.all([getPodcasts(), getPros()])
       .then(([podcasts, pros]) => {
         const proNames = new Set(
@@ -59,22 +61,20 @@ const PodcastsScreen = () => {
           }))
         );
         setLearnData(
-          isPro
-            ? proPodcasts.map((p) => ({
-                id: p._id,
-                title: p.title,
-                author: p.guest || p.host,
-                duration: p.duration,
-                image: p.imageUrl || require("../../assets/mode2.jpg"),
-              }))
-            : []
+          proPodcasts.map((p) => ({
+            id: p._id,
+            title: p.title,
+            author: p.guest || p.host,
+            duration: p.duration,
+            image: p.imageUrl || require("../../assets/mode2.jpg"),
+          }))
         );
       })
       .catch(() => {
         setTrendingData([]);
         setLearnData([]);
       });
-  }, []);
+  }, [isPro]);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,6 +83,15 @@ const PodcastsScreen = () => {
       return () => clearInterval(interval);
     }, [loadPodcasts])
   );
+
+  if (!isPro) {
+    return (
+      <ProPaywall
+        title={t("podcastProTitle")}
+        subtitle={t("podcastProDesc")}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

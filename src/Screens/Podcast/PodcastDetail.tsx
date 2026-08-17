@@ -19,7 +19,7 @@ import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { Audio, Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 
-import { getPodcast, getPros, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
+import { getPodcast, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { useIsPro } from "../../utils/subscription";
@@ -38,29 +38,8 @@ const PodcastDetail = () => {
   const videoRef = useRef<Video | null>(null);
   const [podcast, setPodcast] = useState<any>(null);
   const isPro = useIsPro();
-  const [proNames, setProNames] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    getPros()
-      .then((pros) =>
-        setProNames(
-          new Set(
-            (pros || []).map((p: any) => String(p.name).toLowerCase().trim())
-          )
-        )
-      )
-      .catch(() => setProNames(new Set()));
-  }, []);
-
-  const isProPodcast = !!(
-    podcast &&
-    proNames.size > 0 &&
-    (proNames.has(String(podcast.host || "").toLowerCase().trim()) ||
-      (podcast.guest &&
-        proNames.has(String(podcast.guest).toLowerCase().trim())))
-  );
-
-  const locked = !isPro && isProPodcast;
+  const locked = !isPro;
   const isVideo = !!(
     podcast &&
     (String(podcast.mediaType || "").toLowerCase().startsWith("video") ||

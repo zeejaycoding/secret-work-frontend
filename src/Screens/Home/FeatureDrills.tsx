@@ -259,14 +259,18 @@ const FeatureDrills = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.cardsContainer}
       >
-        {currentDrills.map((item: any) => {
+        {currentDrills.map((item: any, index: number) => {
           return (
             <TouchableOpacity
               key={item.id}
               activeOpacity={0.85}
               style={styles.card}
               onPress={() =>
-                navigation.navigate("DrilLibraryDetail", { drill: item })
+                navigation.navigate("DrilLibraryDetail", {
+                  drill: item,
+                  drills: currentDrills,
+                  currentDrillIndex: index,
+                })
               }
             >
               <Image source={item.image} style={styles.cardImage} />

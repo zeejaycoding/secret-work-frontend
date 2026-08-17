@@ -227,7 +227,7 @@ const WorkoutProfileDetail = () => {
     ? videoData.filter((v) => v.category === activeTab)
     : videoData;
 
-  const renderVideoItem = ({ item }: any) => {
+  const renderVideoItem = ({ item, index }: any) => {
     return (
       <TouchableOpacity activeOpacity={0.8} style={styles.videoCard}>
         <View style={styles.imageWrapper}>
@@ -292,6 +292,16 @@ const WorkoutProfileDetail = () => {
                 duration: item.duration,
                 videoUrl: item.videoUrl,
               },
+              drills: visibleVideos.map((v: any) => ({
+                id: v.id,
+                title: v.title,
+                category: v.category,
+                level: v.level,
+                description: v.description,
+                duration: v.duration,
+                videoUrl: v.videoUrl,
+              })),
+              currentDrillIndex: index,
             })
           }
         >
