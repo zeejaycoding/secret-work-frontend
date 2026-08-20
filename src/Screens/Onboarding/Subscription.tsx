@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -10,6 +10,8 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
+  Linking,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
@@ -19,10 +21,16 @@ import {
 } from "react-native-responsive-dimensions";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { createCheckoutSession, getSubscriptionStatus, getPlans, validateDiscountCode } from "../../services/api";
+import { createSubscription, confirmSubscription, getSubscriptionStatus, getPlans, validateDiscountCode } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { ThemeColors, darkColors } from "../../context/ThemeContext";
 import { useLanguage } from "../../i18n";
+import {
+  useStripe,
+  usePlatformPay,
+  PlatformPayButton,
+  PlatformPay,
+} from "@stripe/stripe-react-native";
 
   const FALLBACK_BENEFIT_KEYS = [
     "benefit1",
@@ -39,15 +47,44 @@ const Subscription = () => {
   const statusBarStyle = "light-content" as const;
   const { t } = useLanguage();
   const styles = createStyles(colors);
+  const { initPaymentSheet, presentPaymentSheet, handleURLCallback } = useStripe();
+  const { isPlatformPaySupported, confirmPlatformPayPayment, confirmPlatformPaySetupIntent } = usePlatformPay();
 
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annually">(
+  const handleDeepLink = useCallback(
+    async (url: string | null) => {
+      if (url) {
+        const stripeHandled = await handleURLCallback(url);
+        if (!stripeHandled) {
+        }
+      }
+    },
+    [handleURLCallback]
+  );
+
+  useEffect(() => {
+    const getUrlAsync = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      handleDeepLink(initialUrl);
+    };
+    getUrlAsync();
+    const sub = Linking.addEventListener("url", (event: { url: string }) => {
+      handleDeepLink(event.url);
+    });
+    return () => sub.remove();
+  }, [handleDeepLink]);
+
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">(
     "monthly",
   );
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null);
   const [discountLoading, setDiscountLoading] = useState(false);
+
+  const [googlePaySupported, setGooglePaySupported] = useState(false);
+  const [applePaySupported, setApplePaySupported] = useState(false);
 
   useEffect(() => {
     getPlans()
@@ -56,7 +93,19 @@ const Subscription = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedPlan !== "annually") {
+    (async () => {
+      try {
+        const gp = await isPlatformPaySupported({ googlePay: { testEnv: true } });
+        setGooglePaySupported(gp);
+      } catch {
+        setGooglePaySupported(false);
+      }
+      setApplePaySupported(Platform.OS === "ios");
+    })();
+  }, [isPlatformPaySupported]);
+
+  useEffect(() => {
+    if (selectedPlan !== "annual") {
       setAppliedDiscount(null);
       setDiscountCode("");
     }
@@ -66,6 +115,14 @@ const Subscription = () => {
   const annualPlan = plans.find((p) => p.key === "annual");
   const currentPlan = selectedPlan === "monthly" ? monthlyPlan : annualPlan;
 
+  const payAmount = (() => {
+    const base = currentPlan?.price?.amount || (selectedPlan === "monthly" ? 5.99 : 60);
+    if (appliedDiscount && selectedPlan === "annual") {
+      return Math.round((base - appliedDiscount.amount) * 100);
+    }
+    return Math.round(base * 100);
+  })();
+
   const formatPrice = (amount?: number) => {
     const n = Number(amount);
     if (!Number.isFinite(n) || n <= 0) return null;
@@ -74,10 +131,10 @@ const Subscription = () => {
 
   const priceText =
     formatPrice(currentPlan?.price?.amount) ??
-    (selectedPlan === "monthly" ? "$9.5" : "$79");
+    (selectedPlan === "monthly" ? "$5.99" : "$60");
 
-  const discountedPriceText = appliedDiscount && selectedPlan === "annually"
-    ? formatPrice((currentPlan?.price?.amount || 79) - appliedDiscount.amount)
+  const discountedPriceText = appliedDiscount && selectedPlan === "annual"
+    ? formatPrice((currentPlan?.price?.amount || 60) - appliedDiscount.amount)
     : null;
 
   const periodText =
@@ -102,7 +159,7 @@ const Subscription = () => {
     if (!discountCode.trim()) return;
     setDiscountLoading(true);
     try {
-      const result = await validateDiscountCode(discountCode.trim(), "annually");
+      const result = await validateDiscountCode(discountCode.trim(), "annual");
       if (result.valid) {
         setAppliedDiscount({ code: result.code || discountCode, amount: result.discountAmount || 5 });
           Alert.alert(t("discountApplied"), result.message || `$${result.discountAmount} off applied!`);
@@ -117,25 +174,21 @@ const Subscription = () => {
     }
   };
 
-  const handleSubscribe = async () => {
-    setLoading(true);
-    try {
-      const { url } = await createCheckoutSession(selectedPlan, appliedDiscount?.code);
-      if (url) {
-        const Linking = require("expo-linking");
-        await Linking.openURL(url);
-        pollSubscriptionStatus();
-      }
-    } catch (error: any) {
-      const msg = error?.response?.data?.error || "Failed to start payment. Try again.";
-      Alert.alert(t("paymentError"), msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const pollSubscriptionStatus = async () => {
-    const maxAttempts = 20;
+    // First: call confirm-subscription to pay the invoice synchronously
+    try {
+      const confirm = await confirmSubscription();
+      console.log("confirmSubscription result:", JSON.stringify(confirm));
+      if (confirm?.isActive || confirm?.alreadyActive) {
+        navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
+        return;
+      }
+    } catch {
+      // continue polling
+    }
+
+    // Then: poll as backup in case confirm-subscription was slow
+    const maxAttempts = 5;
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise((resolve) => setTimeout(resolve, 3000));
       try {
@@ -144,6 +197,14 @@ const Subscription = () => {
           navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
           return;
         }
+        // Try confirm again on each poll iteration
+        try {
+          const c = await confirmSubscription();
+          if (c?.isActive || c?.alreadyActive) {
+            navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
+            return;
+          }
+        } catch {}
       } catch {
         // continue polling
       }
@@ -152,6 +213,142 @@ const Subscription = () => {
       t("paymentStatus"),
       t("paymentProcessing")
     );
+  };
+
+  const handleCardPayment = async () => {
+    setLoading(true);
+    try {
+      const result = await createSubscription(selectedPlan, appliedDiscount?.code);
+      console.log("createSubscription result:", JSON.stringify(result));
+
+      if (result?.alreadyPaid) {
+        navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
+        return;
+      }
+
+      if (!result?.clientSecret) {
+        const detail = result?.error || "Payment initialization failed. Please try again.";
+        Alert.alert(t("paymentError"), detail);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+      setProcessing(true);
+
+      const sheetConfig: any = {
+        merchantDisplayName: "Secret Work",
+        returnURL: "secretwork://stripe-redirect",
+        style: "alwaysDark",
+        billingDetailsCollectionConfiguration: {
+          name: "always",
+          email: "always",
+        },
+      };
+      if (result.clientSecretType === "setup_intent") {
+        sheetConfig.setupIntentClientSecret = result.clientSecret;
+      } else {
+        sheetConfig.paymentIntentClientSecret = result.clientSecret;
+      }
+      const { error: initError } = await initPaymentSheet(sheetConfig);
+
+      if (initError) {
+        console.error("initPaymentSheet error:", initError);
+        Alert.alert(t("paymentError"), initError.message || "Failed to initialize payment.");
+        setProcessing(false);
+        return;
+      }
+
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        if (presentError.code !== "Canceled") {
+          Alert.alert(t("paymentError"), presentError.message || "Payment failed.");
+        }
+        setProcessing(false);
+        return;
+      }
+
+      setProcessing(false);
+      await pollSubscriptionStatus();
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || "Failed to start payment. Try again.";
+      Alert.alert(t("paymentError"), msg);
+      setProcessing(false);
+    }
+  };
+
+  const handlePlatformPay = async () => {
+    setLoading(true);
+    try {
+      const result = await createSubscription(selectedPlan, appliedDiscount?.code);
+      console.log("createSubscription result:", JSON.stringify(result));
+
+      if (result?.alreadyPaid) {
+        navigation.reset({ index: 0, routes: [{ name: "PaymentSuccess" }] });
+        return;
+      }
+
+      if (!result?.clientSecret) {
+        const detail = result?.error || "Payment initialization failed. Please try again.";
+        Alert.alert(t("paymentError"), detail);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+      setProcessing(true);
+
+      const googlePayParams: any = {
+        testEnv: true,
+        merchantName: "Secret Work",
+        merchantCountryCode: "US",
+        currencyCode: "USD",
+        amount: payAmount,
+        billingAddressConfig: {
+          format: PlatformPay.BillingAddressFormat.Full,
+          isPhoneNumberRequired: true,
+          isRequired: true,
+        },
+      };
+
+      const applePayParams: any = {
+        merchantCountryCode: "US",
+        currencyCode: "USD",
+        cartItems: [],
+      };
+
+      let payResult;
+      if (result.clientSecretType === "setup_intent") {
+        payResult = await confirmPlatformPaySetupIntent(
+          result.clientSecret,
+          { googlePay: googlePayParams, applePay: applePayParams }
+        );
+      } else {
+        payResult = await confirmPlatformPayPayment(
+          result.clientSecret,
+          { googlePay: googlePayParams, applePay: applePayParams }
+        );
+      }
+
+      if (payResult?.error) {
+        if (payResult.error.code !== "Canceled") {
+          Alert.alert(t("paymentError"), payResult.error.message || "Payment failed.");
+        }
+        setProcessing(false);
+        return;
+      }
+
+      setProcessing(false);
+      await pollSubscriptionStatus();
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || "Payment failed. Try again.";
+      Alert.alert(t("paymentError"), msg);
+      setProcessing(false);
+    }
+  };
+
+  const handleCancelPayment = () => {
   };
 
   return (
@@ -258,14 +455,14 @@ const Subscription = () => {
               activeOpacity={0.8}
               style={[
                 styles.switchButton,
-                selectedPlan === "annually" && styles.activeSwitch,
+                selectedPlan === "annual" && styles.activeSwitch,
               ]}
-              onPress={() => setSelectedPlan("annually")}
+              onPress={() => setSelectedPlan("annual")}
             >
                 <Text
                   style={[
                     styles.switchText,
-                    selectedPlan === "annually" && styles.activeSwitchText,
+                    selectedPlan === "annual" && styles.activeSwitchText,
                   ]}
                 >
                   {t("annually")}
@@ -317,7 +514,7 @@ const Subscription = () => {
               </View>
             )}
 
-            {selectedPlan === "annually" && !appliedDiscount && (
+            {selectedPlan === "annual" && !appliedDiscount && (
               <View style={styles.discountCodeContainer}>
                 <Text style={styles.discountLabel}>{t("discountCodeLabel")}</Text>
                 <View style={styles.discountInputRow}>
@@ -368,8 +565,8 @@ const Subscription = () => {
             <TouchableOpacity
               activeOpacity={0.8}
               style={[styles.subscribeButton, { backgroundColor: primaryColor }]}
-              onPress={handleSubscribe}
-              disabled={loading}
+              onPress={handleCardPayment}
+              disabled={loading || processing}
             >
               <LinearGradient
                 colors={[primaryColor, primaryColor, primaryColor]}
@@ -377,13 +574,48 @@ const Subscription = () => {
                 end={{ x: 1, y: 0 }}
                 style={styles.subscribeGradient}
               >
-                {loading ? (
+                {loading || processing ? (
                   <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                   <Text style={styles.subscribeText}>{t("subscribe")}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Ionicons name="card-outline" size={moderateScale(18)} color={colors.white} style={{ marginRight: 8 }} />
+                    <Text style={styles.subscribeText}>{t("payWith")} {t("card")} — {discountedPriceText || priceText}</Text>
+                  </View>
                 )}
               </LinearGradient>
             </TouchableOpacity>
+
+            {googlePaySupported && (
+              <>
+                <View style={styles.orContainer}>
+                  <View style={styles.orLine} />
+                  <Text style={styles.orText}>OR</Text>
+                  <View style={styles.orLine} />
+                </View>
+                <PlatformPayButton
+                  type={PlatformPay.ButtonType.Pay}
+                  onPress={handlePlatformPay}
+                  style={styles.platformPayButton}
+                  disabled={loading || processing}
+                />
+              </>
+            )}
+
+            {applePaySupported && (
+              <>
+                <View style={styles.orContainer}>
+                  <View style={styles.orLine} />
+                  <Text style={styles.orText}>OR</Text>
+                  <View style={styles.orLine} />
+                </View>
+                <PlatformPayButton
+                  type={PlatformPay.ButtonType.Pay}
+                  onPress={handlePlatformPay}
+                  style={styles.platformPayButton}
+                  disabled={loading || processing}
+                />
+              </>
+            )}
           </LinearGradient>
 
           <TouchableOpacity
@@ -674,6 +906,71 @@ const createStyles = (colors: ThemeColors) =>
     subscribeText: {
       color: colors.white,
       fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
+
+    paymentMethodsContainer: {
+      marginTop: responsiveHeight(0.5),
+    },
+
+    paymentMethodsTitle: {
+      color: colors.textSecondary,
+      fontSize: moderateScale(13),
+      fontFamily: "Inter-Medium",
+      textAlign: "center",
+      marginBottom: responsiveHeight(1.5),
+    },
+
+    payCardButton: {
+      width: "100%",
+      height: responsiveHeight(5.8),
+      borderRadius: moderateScale(12),
+      borderWidth: 1.5,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(255,255,255,0.05)",
+    },
+
+    payCardText: {
+      color: colors.white,
+      fontSize: moderateScale(15),
+      fontFamily: "Inter-Medium",
+    },
+
+    platformPayButton: {
+      width: "100%",
+      height: 50,
+      borderRadius: moderateScale(12),
+    },
+
+    orContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginVertical: responsiveHeight(1.2),
+    },
+
+    orLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: "rgba(255,255,255,0.15)",
+    },
+
+    orText: {
+      color: colors.textMuted,
+      fontSize: moderateScale(12),
+      marginHorizontal: moderateScale(12),
+      fontFamily: "Inter-Medium",
+    },
+
+    changeMethodButton: {
+      marginTop: responsiveHeight(1.5),
+      alignItems: "center",
+    },
+
+    changeMethodText: {
+      color: colors.textMuted,
+      fontSize: moderateScale(12),
       fontFamily: "Inter-Medium",
     },
 
