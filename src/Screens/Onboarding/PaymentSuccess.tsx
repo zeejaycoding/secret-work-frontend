@@ -32,9 +32,9 @@ const PaymentSuccess = () => {
     setIsLoading(true);
     try {
       await completeOnboarding();
-      navigation.navigate("BottomTabs");
+      navigation.navigate("BottomTabs", { screen: "Profile" });
     } catch {
-      navigation.navigate("BottomTabs");
+      navigation.navigate("BottomTabs", { screen: "Profile" });
     } finally {
       setIsLoading(false);
     }
