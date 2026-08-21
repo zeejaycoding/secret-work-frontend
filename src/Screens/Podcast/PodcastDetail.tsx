@@ -7,6 +7,7 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
+  PanResponder,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { moderateScale } from "react-native-size-matters";
@@ -19,7 +20,7 @@ import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { Audio, Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 
-import { getPodcast, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
+import { getPodcast, getPodcasts, incrementPodcastPlays, reportPodcastProgress, reportWatchTime } from "../../services/api";
 import { useBranding } from "../../context/BrandingContext";
 import { useAppTheme, ThemeColors } from "../../context/ThemeContext";
 import { useIsPro } from "../../utils/subscription";
@@ -37,6 +38,10 @@ const PodcastDetail = () => {
   const soundRef = useRef<Audio.Sound | null>(null);
   const videoRef = useRef<Video | null>(null);
   const [podcast, setPodcast] = useState<any>(null);
+  const [episodes, setEpisodes] = useState<any[]>([]);
+  const [shuffledOrder, setShuffledOrder] = useState<number[]>([]);
+  const episodeIndexRef = useRef(-1);
+  const shuffleOrderRef = useRef<number[]>([]);
   const isPro = useIsPro();
 
   const locked = !isPro;
@@ -55,6 +60,57 @@ const PodcastDetail = () => {
   const lastPositionRef = useRef(0);
   const completionRef = useRef(0);
   const audioFile = require("../../assets/song.mp3");
+  const playNextRef = useRef<() => void>(() => {});
+  const waveContainerRef = useRef<View>(null);
+  const waveLayoutRef = useRef({ x: 0, width: 0 });
+  const [scrubbing, setScrubbing] = useState(false);
+  const [scrubPos, setScrubPos] = useState(0);
+  const durationRef = useRef(1);
+  const positionRef = useRef(0);
+  const isVideoRef = useRef(false);
+
+  durationRef.current = duration;
+  positionRef.current = position;
+  isVideoRef.current = isVideo;
+
+  const seekTo = async (millis: number) => {
+    const clamped = Math.max(0, Math.min(durationRef.current, millis));
+    if (isVideoRef.current) {
+      if (!videoRef.current) return;
+      await videoRef.current.setPositionAsync(clamped);
+    } else {
+      if (!soundRef.current) return;
+      await soundRef.current.setPositionAsync(clamped);
+    }
+    setPosition(clamped);
+  };
+
+  const ratioFromTouch = (pageX: number) => {
+    const { x, width } = waveLayoutRef.current;
+    if (width <= 0) return positionRef.current / durationRef.current;
+    return Math.max(0, Math.min(1, (pageX - x) / width));
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        setScrubbing(true);
+        const ratio = ratioFromTouch(evt.nativeEvent.pageX);
+        setScrubPos(ratio * durationRef.current);
+      },
+      onPanResponderMove: (evt) => {
+        const ratio = ratioFromTouch(evt.nativeEvent.pageX);
+        setScrubPos(ratio * durationRef.current);
+      },
+      onPanResponderRelease: async (evt) => {
+        setScrubbing(false);
+        const ratio = ratioFromTouch(evt.nativeEvent.pageX);
+        await seekTo(ratio * durationRef.current);
+      },
+    })
+  ).current;
 
   const bars = [
     1.2, 2.8, 1.6, 3.5, 1.8, 4.2, 2.2, 3.2, 1.4, 4.5, 2.4, 3.8, 1.6, 2.8, 4.2,
@@ -71,6 +127,37 @@ const PodcastDetail = () => {
         .catch(() => setPodcast(null));
     }, [id])
   );
+
+  useEffect(() => {
+    getPodcasts()
+      .then((list) => {
+        setEpisodes(list);
+        const idx = list.findIndex((e: any) => e._id === id);
+        episodeIndexRef.current = idx;
+      })
+      .catch(() => {});
+  }, [id]);
+
+  const buildShuffleOrder = useCallback((list: any[], currentId: string) => {
+    const indices = list
+      .map((_, i) => i)
+      .filter((i) => list[i]._id !== currentId);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const curIdx = list.findIndex((e: any) => e._id === currentId);
+    if (curIdx !== -1) indices.unshift(curIdx);
+    return indices;
+  }, []);
+
+  useEffect(() => {
+    if (shuffleOn && episodes.length > 0 && podcast) {
+      const order = buildShuffleOrder(episodes, podcast._id);
+      setShuffledOrder(order);
+      shuffleOrderRef.current = order;
+    }
+  }, [shuffleOn, episodes, podcast, buildShuffleOrder]);
 
   const flushProgress = useCallback(
     (completion?: number) => {
@@ -92,6 +179,76 @@ const PodcastDetail = () => {
     },
     [id]
   );
+
+  const goToEpisode = useCallback(
+    (episode: any) => {
+      flushProgress(completionRef.current);
+      navigation.setParams({ id: episode._id });
+      setPodcast(episode);
+      setPosition(0);
+      setDuration(1);
+      setIsPlaying(false);
+      listenedSecRef.current = 0;
+      lastPositionRef.current = 0;
+      completionRef.current = 0;
+      const idx = episodes.findIndex((e: any) => e._id === episode._id);
+      episodeIndexRef.current = idx;
+      if (shuffleOn && shuffleOrderRef.current.length > 0) {
+        const pos = shuffleOrderRef.current.indexOf(idx);
+        if (pos === -1) {
+          const order = [...shuffleOrderRef.current];
+          order.splice(Math.floor(Math.random() * order.length), 0, idx);
+          shuffleOrderRef.current = order;
+          setShuffledOrder(order);
+        }
+      }
+    },
+    [episodes, shuffleOn, flushProgress, navigation]
+  );
+
+  const playNextEpisode = useCallback(() => {
+    if (episodes.length === 0) return;
+    let nextIdx: number;
+    if (shuffleOn && shuffleOrderRef.current.length > 0) {
+      const curGlobalIdx = episodeIndexRef.current;
+      const posInShuffle = shuffleOrderRef.current.indexOf(curGlobalIdx);
+      const nextPos =
+        posInShuffle + 1 < shuffleOrderRef.current.length
+          ? posInShuffle + 1
+          : 0;
+      nextIdx = shuffleOrderRef.current[nextPos];
+    } else {
+      nextIdx =
+        episodeIndexRef.current + 1 < episodes.length
+          ? episodeIndexRef.current + 1
+          : 0;
+    }
+    goToEpisode(episodes[nextIdx]);
+  }, [episodes, shuffleOn, goToEpisode]);
+
+  const playPrevEpisode = useCallback(() => {
+    if (episodes.length === 0) return;
+    let prevIdx: number;
+    if (shuffleOn && shuffleOrderRef.current.length > 0) {
+      const curGlobalIdx = episodeIndexRef.current;
+      const posInShuffle = shuffleOrderRef.current.indexOf(curGlobalIdx);
+      const prevPos =
+        posInShuffle - 1 >= 0
+          ? posInShuffle - 1
+          : shuffleOrderRef.current.length - 1;
+      prevIdx = shuffleOrderRef.current[prevPos];
+    } else {
+      prevIdx =
+        episodeIndexRef.current - 1 >= 0
+          ? episodeIndexRef.current - 1
+          : episodes.length - 1;
+    }
+    goToEpisode(episodes[prevIdx]);
+  }, [episodes, shuffleOn, goToEpisode]);
+
+  useEffect(() => {
+    playNextRef.current = playNextEpisode;
+  }, [playNextEpisode]);
 
   useEffect(() => {
     if (!podcast || locked) return;
@@ -151,6 +308,10 @@ const PodcastDetail = () => {
               soundRef.current.setPositionAsync(0);
               soundRef.current.playAsync();
               lastPositionRef.current = 0;
+            } else if (shuffleOn) {
+              setIsPlaying(false);
+              flushProgress(100);
+              playNextRef.current();
             } else {
               setIsPlaying(false);
               flushProgress(100);
@@ -197,6 +358,10 @@ const PodcastDetail = () => {
         videoRef.current.setPositionAsync(0);
         videoRef.current.playAsync();
         lastPositionRef.current = 0;
+      } else if (shuffleOn) {
+        setIsPlaying(false);
+        flushProgress(100);
+        playNextRef.current();
       } else {
         setIsPlaying(false);
         flushProgress(100);
@@ -240,36 +405,35 @@ const PodcastDetail = () => {
   };
 
   const toggleShuffle = () => {
-    setShuffleOn((v) => !v);
+    setShuffleOn((v) => {
+      const next = !v;
+      if (next && episodes.length > 0 && podcast) {
+        const order = buildShuffleOrder(episodes, podcast._id);
+        setShuffledOrder(order);
+        shuffleOrderRef.current = order;
+      }
+      return next;
+    });
   };
 
   const skipBack = async () => {
-    const newPos = Math.max(0, position - 15000);
-    if (isVideo) {
-      if (!videoRef.current) return;
-      await videoRef.current.setPositionAsync(newPos);
+    if (position > 3000) {
+      const newPos = 0;
+      if (isVideo) {
+        if (!videoRef.current) return;
+        await videoRef.current.setPositionAsync(newPos);
+      } else {
+        if (!soundRef.current) return;
+        await soundRef.current.setPositionAsync(newPos);
+      }
+      setPosition(newPos);
     } else {
-      if (!soundRef.current) return;
-      await soundRef.current.setPositionAsync(newPos);
+      playPrevEpisode();
     }
-    setPosition(newPos);
   };
 
   const skipForward = async () => {
-    let newPos: number;
-    if (shuffleOn) {
-      newPos = Math.random() * Math.max(0, duration - 1000);
-    } else {
-      newPos = Math.min(duration, position + 15000);
-    }
-    if (isVideo) {
-      if (!videoRef.current) return;
-      await videoRef.current.setPositionAsync(newPos);
-    } else {
-      if (!soundRef.current) return;
-      await soundRef.current.setPositionAsync(newPos);
-    }
-    setPosition(newPos);
+    playNextEpisode();
   };
 
   const formatTime = (millis: number) => {
@@ -446,9 +610,19 @@ const PodcastDetail = () => {
           {podcast?.title || "The Mentality Of\nElite Players"}
         </Text>
 
-        <View style={styles.waveContainer}>
+        <View
+          ref={waveContainerRef}
+          style={styles.waveContainer}
+          {...panResponder.panHandlers}
+          onLayout={() => {
+            waveContainerRef.current?.measureInWindow((x, _y, width) => {
+              waveLayoutRef.current = { x, width };
+            });
+          }}
+        >
           {bars.map((barHeight, index) => {
-            const currentBar = progress * bars.length;
+            const displayPosition = scrubbing ? scrubPos : position;
+            const currentBar = (displayPosition / duration) * bars.length;
 
             const isActive = index <= currentBar;
 
@@ -475,14 +649,14 @@ const PodcastDetail = () => {
         </View>
 
         <View style={styles.timeRow}>
-          <Text style={styles.timeText}>{formatTime(position)}</Text>
+          <Text style={styles.timeText}>{formatTime(scrubbing ? scrubPos : position)}</Text>
 
           <Text style={styles.timeText}>{formatTime(duration)}</Text>
         </View>
 
         <View style={styles.playerContainer}>
           <TouchableOpacity onPress={toggleRepeat}>
-            <Feather name="repeat" size={moderateScale(16)} color={colors.text} />
+            <Feather name="repeat" size={moderateScale(16)} color={repeatOn ? primaryColor : colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.smallButton} onPress={skipBack}>
@@ -520,7 +694,7 @@ const PodcastDetail = () => {
             <MaterialCommunityIcons
               name="shuffle"
               size={moderateScale(20)}
-              color={colors.text}
+              color={shuffleOn ? primaryColor : colors.text}
             />
           </TouchableOpacity>
         </View>

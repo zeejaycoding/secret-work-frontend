@@ -331,13 +331,38 @@ export async function setPassword(password: string) {
   return data;
 }
 
-export async function createCheckoutSession(plan: "monthly" | "annually", discountCode?: string) {
+export async function createCheckoutSession(plan: "monthly" | "annual", discountCode?: string) {
   const payload: any = { plan };
   if (discountCode) {
     payload.discountCode = discountCode;
   }
   const { data } = await api.post("/payments/checkout", payload);
   return data;
+}
+
+export async function createSetupIntent() {
+  const { data } = await api.post("/payments/setup-intent");
+  return data as { clientSecret: string; setupIntentId: string; customerId: string };
+}
+
+export async function createSubscription(plan: "monthly" | "annual", discountCode?: string) {
+  const payload: any = { plan };
+  if (discountCode) {
+    payload.discountCode = discountCode;
+  }
+  const { data } = await api.post("/payments/subscription", payload);
+  return data as {
+    subscriptionId: string;
+    clientSecret?: string;
+    clientSecretType?: "payment_intent" | "setup_intent";
+    alreadyPaid?: boolean;
+    error?: string;
+  };
+}
+
+export async function confirmSubscription() {
+  const { data } = await api.post("/payments/confirm-subscription");
+  return data as { ok: boolean; isActive?: boolean; alreadyActive?: boolean; status?: string; error?: string };
 }
 
 export interface DiscountValidation {

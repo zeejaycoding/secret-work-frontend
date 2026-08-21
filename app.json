@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "usesApplePay": true,
+      "infoPlist": {
+        "NSAppleMusicUsageDescription": "We use Apple Pay to securely process your payment."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +26,16 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.busines2202.secretwork"
+      "package": "com.busines2202.secretwork",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googlePay": {
+          "merchantId": "",
+          "merchantName": "Secret Work",
+          "gateway": "stripe",
+          "gatewayMerchantId": ""
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,6 +46,13 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-image-picker",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.secretwork",
+          "urlScheme": "secretwork"
+        }
+      ],
       [
         "expo-notifications",
         {

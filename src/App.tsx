@@ -9,6 +9,7 @@ import {
 import type { RouteProp } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ClerkProvider } from "@clerk/clerk-expo";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import { AuthProvider } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
 import { ThemeProvider, useAppTheme } from "./context/ThemeContext";
@@ -234,6 +235,11 @@ export default function App() {
       publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
       tokenCache={clerkTokenCache}
     >
+    <StripeProvider
+      publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+      merchantIdentifier="merchant.com.secretwork"
+      urlScheme="secretwork"
+    >
     <AuthProvider>
       <BrandingProvider>
         <ThemeProvider>
@@ -243,6 +249,7 @@ export default function App() {
         </ThemeProvider>
       </BrandingProvider>
     </AuthProvider>
+    </StripeProvider>
     </ClerkProvider>
   );
 }
